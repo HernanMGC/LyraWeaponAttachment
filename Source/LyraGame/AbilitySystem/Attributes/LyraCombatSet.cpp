@@ -12,6 +12,7 @@ class FLifetimeProperty;
 
 ULyraCombatSet::ULyraCombatSet()
 	: BaseDamage(0.0f)
+	, BaseDamageMultiplier(1.0f)
 	, BaseHeal(0.0f)
 {
 }
@@ -21,6 +22,7 @@ void ULyraCombatSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(ULyraCombatSet, BaseDamage, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ULyraCombatSet, BaseDamageMultiplier, COND_OwnerOnly, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULyraCombatSet, BaseHeal, COND_OwnerOnly, REPNOTIFY_Always);
 }
 

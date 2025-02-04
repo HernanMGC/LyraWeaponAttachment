@@ -50,6 +50,14 @@ public:
 		return ItemDef;
 	}
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
+	void AddWeaponAttachment(TSubclassOf<ULyraInventoryItemAttachmentDefinition> WeaponAttachmentDefinition);
+	
+	TArray<TSubclassOf<ULyraInventoryItemAttachmentDefinition>> GetAttachmentDefs() const
+	{
+		return AttachmentDefs;
+	}
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, meta=(DeterminesOutputType=FragmentClass))
 	const ULyraInventoryItemFragment* FindFragmentByClass(TSubclassOf<ULyraInventoryItemFragment> FragmentClass) const;
 
@@ -76,4 +84,8 @@ private:
 	// The item definition
 	UPROPERTY(Replicated)
 	TSubclassOf<ULyraInventoryItemDefinition> ItemDef;
+
+	// The item attachment definitions
+	UPROPERTY(Replicated)
+	TArray<TSubclassOf<ULyraInventoryItemAttachmentDefinition>> AttachmentDefs;
 };

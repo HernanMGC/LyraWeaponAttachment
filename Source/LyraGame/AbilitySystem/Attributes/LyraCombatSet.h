@@ -27,6 +27,7 @@ public:
 	ULyraCombatSet();
 
 	ATTRIBUTE_ACCESSORS(ULyraCombatSet, BaseDamage);
+	ATTRIBUTE_ACCESSORS(ULyraCombatSet, BaseDamageMultiplier);
 	ATTRIBUTE_ACCESSORS(ULyraCombatSet, BaseHeal);
 
 protected:
@@ -42,6 +43,10 @@ private:
 	// The base amount of damage to apply in the damage execution.
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_BaseDamage, Category = "Lyra|Combat", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData BaseDamage;
+	
+	// The base multiplier o apply to damage on damage application execution.
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_BaseDamage, Category = "Lyra|Combat", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData BaseDamageMultiplier;
 
 	// The base amount of healing to apply in the heal execution.
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_BaseHeal, Category = "Lyra|Combat", Meta = (AllowPrivateAccess = true))

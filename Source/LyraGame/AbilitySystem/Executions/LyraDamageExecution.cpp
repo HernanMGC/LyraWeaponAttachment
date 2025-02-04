@@ -13,10 +13,12 @@
 struct FDamageStatics
 {
 	FGameplayEffectAttributeCaptureDefinition BaseDamageDef;
+	FGameplayEffectAttributeCaptureDefinition BaseDamageMultDef;
 
 	FDamageStatics()
 	{
 		BaseDamageDef = FGameplayEffectAttributeCaptureDefinition(ULyraCombatSet::GetBaseDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+		BaseDamageMultDef = FGameplayEffectAttributeCaptureDefinition(ULyraCombatSet::GetBaseDamageMultiplierAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 	}
 };
 
@@ -30,6 +32,7 @@ static FDamageStatics& DamageStatics()
 ULyraDamageExecution::ULyraDamageExecution()
 {
 	RelevantAttributesToCapture.Add(DamageStatics().BaseDamageDef);
+	RelevantAttributesToCapture.Add(DamageStatics().BaseDamageMultDef);
 }
 
 void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
@@ -48,6 +51,8 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 
 	float BaseDamage = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageDef, EvaluateParameters, BaseDamage);
+	float BaseDamageMult = 1.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageMultDef, EvaluateParameters, BaseDamageMult);
 
 	const AActor* EffectCauser = TypedContext->GetEffectCauser();
 	const FHitResult* HitActorResult = TypedContext->GetHitResult();
@@ -127,7 +132,7 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 	DistanceAttenuation = FMath::Max(DistanceAttenuation, 0.0f);
 
 	// Clamping is done when damage is converted to -health
-	const float DamageDone = FMath::Max(BaseDamage * DistanceAttenuation * PhysicalMaterialAttenuation * DamageInteractionAllowedMultiplier, 0.0f);
+	const float DamageDone = FMath::Max(BaseDamage * DistanceAttenuation * PhysicalMaterialAttenuation * DamageInteractionAllowedMultiplier * BaseDamageMult, 0.0f);
 
 	if (DamageDone > 0.0f)
 	{

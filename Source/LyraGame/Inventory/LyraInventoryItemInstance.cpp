@@ -9,6 +9,8 @@
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif // UE_WITH_IRIS
 
+#include "LyraInventoryItemAttachmentDefinition.h"
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraInventoryItemInstance)
 
 class FLifetimeProperty;
@@ -60,6 +62,20 @@ void ULyraInventoryItemInstance::SetItemDef(TSubclassOf<ULyraInventoryItemDefini
 {
 	ItemDef = InDef;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraInventoryItemInstance::AddWeaponAttachment(
+	TSubclassOf<ULyraInventoryItemAttachmentDefinition> WeaponAttachmentDefinition)
+{
+	AttachmentDefs.Add(WeaponAttachmentDefinition);		
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 const ULyraInventoryItemFragment* ULyraInventoryItemInstance::FindFragmentByClass(TSubclassOf<ULyraInventoryItemFragment> FragmentClass) const
 {

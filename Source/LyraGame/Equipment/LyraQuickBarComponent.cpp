@@ -2,6 +2,8 @@
 
 #include "LyraQuickBarComponent.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "Equipment/LyraEquipmentDefinition.h"
 #include "Equipment/LyraEquipmentInstance.h"
 #include "Equipment/LyraEquipmentManagerComponent.h"
@@ -9,6 +11,7 @@
 #include "GameFramework/Pawn.h"
 #include "Inventory/InventoryFragment_EquippableItem.h"
 #include "NativeGameplayTags.h"
+#include "Inventory/LyraInventoryItemAttachmentDefinition.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraQuickBarComponent)
@@ -101,6 +104,19 @@ void ULyraQuickBarComponent::EquipItemInSlot()
 					if (EquippedItem != nullptr)
 					{
 						EquippedItem->SetInstigator(SlotItem);
+						for (TSubclassOf<ULyraInventoryItemAttachmentDefinition> attachmentDef : SlotItem->GetAttachmentDefs())
+						{
+							if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(EquippedItem->GetPawn()))
+							{
+								const ULyraInventoryItemAttachmentDefinition* attachmentDefCDO = GetDefault<ULyraInventoryItemAttachmentDefinition>(attachmentDef);
+								for (TSubclassOf<UGameplayEffect> gameplayEffect : attachmentDefCDO->GameplayEffects)
+								{
+									const UGameplayEffect* gameplayEffectCDO = gameplayEffect->GetDefaultObject<UGameplayEffect>();
+
+									ASC->ApplyGameplayEffectToSelf(gameplayEffectCDO, 0, ASC->MakeEffectContext());
+								}
+							}
+						}
 					}
 				}
 			}
@@ -114,6 +130,22 @@ void ULyraQuickBarComponent::UnequipItemInSlot()
 	{
 		if (EquippedItem != nullptr)
 		{
+			if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(EquippedItem->GetInstigator()))
+			{
+				for (TSubclassOf<ULyraInventoryItemAttachmentDefinition> attachmentDef : slotItem->GetAttachmentDefs())
+				{
+					if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(EquippedItem->GetPawn()))
+					{
+						const ULyraInventoryItemAttachmentDefinition* attachmentDefCDO = GetDefault<ULyraInventoryItemAttachmentDefinition>(attachmentDef);
+						for (TSubclassOf<UGameplayEffect> gameplayEffect : attachmentDefCDO->GameplayEffects)
+						{
+							const UGameplayEffect* gameplayEffectCDO = gameplayEffect->GetDefaultObject<UGameplayEffect>();
+							ASC->RemoveActiveGameplayEffectBySourceEffect(gameplayEffect,  ASC, 1);
+						}
+					}
+				}
+			}
+			
 			EquipmentManager->UnequipItem(EquippedItem);
 			EquippedItem = nullptr;
 		}
