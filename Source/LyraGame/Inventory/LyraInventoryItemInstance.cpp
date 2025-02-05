@@ -15,10 +15,18 @@
 
 class FLifetimeProperty;
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 ULyraInventoryItemInstance::ULyraInventoryItemInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -71,6 +79,13 @@ void ULyraInventoryItemInstance::AddWeaponAttachment(
 	TSubclassOf<ULyraInventoryItemAttachmentDefinition> WeaponAttachmentDefinition)
 {
 	AttachmentDefs.Add(WeaponAttachmentDefinition);		
+}
+
+
+void ULyraInventoryItemInstance::AddWeaponAttachmentItem(
+	ULyraInventoryItemInstance* WeaponAttachmentItem)
+{
+	AttachedItemInstances.Add(WeaponAttachmentItem);		
 }
 
 ////////////////////////////////////////////////////////////////////////////////

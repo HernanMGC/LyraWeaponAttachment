@@ -149,6 +149,31 @@ ULyraInventoryManagerComponent::ULyraInventoryManagerComponent(const FObjectInit
 	SetIsReplicatedByDefault(true);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraInventoryManagerComponent::Server_AddAttachmentToWeapon_Implementation(ULyraInventoryItemInstance* Weapon,
+	ULyraInventoryItemInstance* Attachment)
+{
+	Weapon->AddWeaponAttachmentItem(Attachment);
+	auto a = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+bool ULyraInventoryManagerComponent::Server_AddAttachmentToWeapon_Validate(ULyraInventoryItemInstance* Weapon,
+	ULyraInventoryItemInstance* Attachment)
+{
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void ULyraInventoryManagerComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

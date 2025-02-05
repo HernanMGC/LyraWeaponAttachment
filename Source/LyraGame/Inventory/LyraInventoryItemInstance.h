@@ -7,6 +7,7 @@
 
 #include "LyraInventoryItemInstance.generated.h"
 
+class ULyraInventoryItemAttachmentDefinition;
 class FLifetimeProperty;
 
 class ULyraInventoryItemDefinition;
@@ -52,7 +53,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	void AddWeaponAttachment(TSubclassOf<ULyraInventoryItemAttachmentDefinition> WeaponAttachmentDefinition);
-	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
+	void AddWeaponAttachmentItem(ULyraInventoryItemInstance* WeaponAttachmentItem);
+
 	TArray<TSubclassOf<ULyraInventoryItemAttachmentDefinition>> GetAttachmentDefs() const
 	{
 		return AttachmentDefs;
@@ -88,4 +91,8 @@ private:
 	// The item attachment definitions
 	UPROPERTY(Replicated)
 	TArray<TSubclassOf<ULyraInventoryItemAttachmentDefinition>> AttachmentDefs;
+	
+	// The item attachment definitions
+	UPROPERTY(Replicated)
+	TArray<TObjectPtr<ULyraInventoryItemInstance>> AttachedItemInstances;
 };

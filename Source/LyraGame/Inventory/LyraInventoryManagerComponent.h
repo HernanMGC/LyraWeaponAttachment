@@ -137,6 +137,10 @@ class LYRAGAME_API ULyraInventoryManagerComponent : public UActorComponent
 public:
 	ULyraInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	// This is a ServerRPC, marked as unreliable and WithValidation (is required!)
+	UFUNCTION(BlueprintCallable, Server, unreliable, WithValidation)
+	void Server_AddAttachmentToWeapon(ULyraInventoryItemInstance* Weapon, ULyraInventoryItemInstance* Attachment);
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	bool CanAddItemDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 StackCount = 1);
 
