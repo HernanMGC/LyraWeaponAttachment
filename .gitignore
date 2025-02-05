@@ -76,3 +76,4 @@ DerivedDataCache/*
 
 # Temp Files
 Config/DefaultEditorPerProjectUserSettings.ini
+*.DotSettings.user
