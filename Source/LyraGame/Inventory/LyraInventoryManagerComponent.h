@@ -143,6 +143,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	ULyraInventoryItemInstance* AddItemDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 StackCount = 1);
 
+	// Move one item from this InventoryManagerComponent to another
+	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
+	void Server_MoveItemInstanceTo(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* DestinationInventory);
+
+	// Move one item from another InventoryManagerComponent to this InventoryManagerComponent 
+	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
+	void Server_MoveItemInstanceFrom(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* SourceInventory);
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	void AddItemInstance(ULyraInventoryItemInstance* ItemInstance);
 

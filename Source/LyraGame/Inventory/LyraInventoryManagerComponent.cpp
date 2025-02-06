@@ -72,7 +72,7 @@ void FLyraInventoryList::BroadcastChangeMessage(FLyraInventoryEntry& Entry, int3
 	Message.Instance = Entry.Instance;
 	Message.NewCount = NewCount;
 	Message.Delta = NewCount - OldCount;
-
+	
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
 	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_StackChanged, Message);
 }
@@ -109,7 +109,20 @@ ULyraInventoryItemInstance* FLyraInventoryList::AddEntry(TSubclassOf<ULyraInvent
 
 void FLyraInventoryList::AddEntry(ULyraInventoryItemInstance* Instance)
 {
-	unimplemented();
+	check(OwnerComponent);
+
+	AActor* OwningActor = OwnerComponent->GetOwner();
+	check(OwningActor->HasAuthority());
+
+
+	FLyraInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
+	NewEntry.Instance = Instance;
+	NewEntry.StackCount = 1;
+
+	//const ULyraInventoryItemDefinition* ItemCDO = GetDefault<ULyraInventoryItemDefinition>(ItemDef);
+	MarkItemDirty(NewEntry);
+	
+	BroadcastChangeMessage(NewEntry, /*OldCount=*/ 0, /*NewCount=*/ NewEntry.StackCount);
 }
 
 void FLyraInventoryList::RemoveEntry(ULyraInventoryItemInstance* Instance)
@@ -119,6 +132,8 @@ void FLyraInventoryList::RemoveEntry(ULyraInventoryItemInstance* Instance)
 		FLyraInventoryEntry& Entry = *EntryIt;
 		if (Entry.Instance == Instance)
 		{
+			int32 oldCount = Entry.StackCount;
+			BroadcastChangeMessage(Entry, /*OldCount=*/ 1, /*NewCount=*/ 0);
 			EntryIt.RemoveCurrent();
 			MarkArrayDirty();
 		}
@@ -176,6 +191,52 @@ ULyraInventoryItemInstance* ULyraInventoryManagerComponent::AddItemDefinition(TS
 	}
 	return Result;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Implementation(
+	ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* SourceInventory)
+{
+	SourceInventory->RemoveItemInstance(ItemInstance);
+	AddItemInstance(ItemInstance);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+bool ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Validate(ULyraInventoryItemInstance* ItemInstance,
+	ULyraInventoryManagerComponent* SourceInventory)
+{
+	return (ItemInstance != nullptr) && (SourceInventory != nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Implementation(ULyraInventoryItemInstance* ItemInstance,
+                                                                              ULyraInventoryManagerComponent* DestinationInventory)
+{
+	RemoveItemInstance(ItemInstance);
+	DestinationInventory->AddItemInstance(ItemInstance);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+bool ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Validate(ULyraInventoryItemInstance* ItemInstance,
+	ULyraInventoryManagerComponent* DestinationInventory)
+{
+	return (ItemInstance != nullptr) && (DestinationInventory != nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraInventoryManagerComponent::AddItemInstance(ULyraInventoryItemInstance* ItemInstance)
 {
