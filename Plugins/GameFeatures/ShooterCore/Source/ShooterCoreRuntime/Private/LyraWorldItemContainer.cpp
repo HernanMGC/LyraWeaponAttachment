@@ -4,7 +4,7 @@
 #include "LyraWorldItemContainer.h"
 
 // Unreal Engine
-#include "Net/UnrealNetwork.h"
+#include "Components/GameFrameworkComponentManager.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -23,6 +23,34 @@ void ALyraWorldItemContainer::GatherInteractionOptions(const FInteractionQuery& 
 	FInteractionOptionBuilder& InteractionBuilder)
 {
 	InteractionBuilder.AddInteractionOption(Option);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ALyraWorldItemContainer::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UGameFrameworkComponentManager* componentManager = GetGameInstance()->GetSubsystem<UGameFrameworkComponentManager>())
+	{
+		componentManager->AddReceiver(this);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ALyraWorldItemContainer::Destroyed()
+{
+	if (UGameFrameworkComponentManager* componentManager = GetGameInstance()->GetSubsystem<UGameFrameworkComponentManager>())
+	{
+		componentManager->RemoveReceiver(this);
+	}
+	
+	Super::Destroyed();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,19 +2,24 @@
 
 #pragma once
 
+// Unreal Engine
 #include "Components/ActorComponent.h"
 #include "Net/Serialization/FastArraySerializer.h"
 
+// Lyra Project
 #include "LyraInventoryManagerComponent.generated.h"
 
+// Unreal Engine
+class UObject;
+struct FFrame;
+struct FNetDeltaSerializeInfo;
+struct FReplicationFlags;
+
+// Lyra Project
 class ULyraInventoryItemDefinition;
 class ULyraInventoryItemInstance;
 class ULyraInventoryManagerComponent;
-class UObject;
-struct FFrame;
 struct FLyraInventoryList;
-struct FNetDeltaSerializeInfo;
-struct FReplicationFlags;
 
 /** A message when an item is added to the inventory */
 USTRUCT(BlueprintType)
@@ -151,6 +156,11 @@ public:
 	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
 	void Server_MoveItemInstanceFrom(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* SourceInventory);
 
+	// Attach item to weapon and move the item if it comes from another InventoryManagerComponent to this InventoryManagerComponent 
+	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
+	void Server_AttachItemToWeapon(ULyraInventoryItemInstance* WeaponInstance, ULyraInventoryItemInstance* AttachmentInstance,
+	ULyraInventoryManagerComponent* AttachmentSourceInventory);
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	void AddItemInstance(ULyraInventoryItemInstance* ItemInstance);
 

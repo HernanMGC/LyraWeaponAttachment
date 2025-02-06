@@ -1,17 +1,24 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Class
 #include "LyraInventoryManagerComponent.h"
 
+// Unreal Engine
 #include "Engine/ActorChannel.h"
 #include "Engine/World.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "LyraInventoryItemDefinition.h"
-#include "LyraInventoryItemInstance.h"
 #include "NativeGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
+// Lyra Project
+#include "InventoryFragment_AttachableItem.h"
+#include "InventoryFragment_EquippableItem.h"
+#include "LyraInventoryItemDefinition.h"
+#include "LyraInventoryItemInstance.h"
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraInventoryManagerComponent)
 
+// Unreal Engine
 class FLifetimeProperty;
 struct FReplicationFlags;
 
@@ -44,6 +51,10 @@ void FLyraInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndi
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void FLyraInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
 {
 	for (int32 Index : AddedIndices)
@@ -53,6 +64,10 @@ void FLyraInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices,
 		Stack.LastObservedCount = Stack.StackCount;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void FLyraInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
 {
@@ -65,6 +80,10 @@ void FLyraInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedInd
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void FLyraInventoryList::BroadcastChangeMessage(FLyraInventoryEntry& Entry, int32 OldCount, int32 NewCount)
 {
 	FLyraInventoryChangeMessage Message;
@@ -76,6 +95,10 @@ void FLyraInventoryList::BroadcastChangeMessage(FLyraInventoryEntry& Entry, int3
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
 	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_StackChanged, Message);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 ULyraInventoryItemInstance* FLyraInventoryList::AddEntry(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 StackCount)
 {
@@ -107,6 +130,10 @@ ULyraInventoryItemInstance* FLyraInventoryList::AddEntry(TSubclassOf<ULyraInvent
 	return Result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void FLyraInventoryList::AddEntry(ULyraInventoryItemInstance* Instance)
 {
 	check(OwnerComponent);
@@ -125,6 +152,10 @@ void FLyraInventoryList::AddEntry(ULyraInventoryItemInstance* Instance)
 	BroadcastChangeMessage(NewEntry, /*OldCount=*/ 0, /*NewCount=*/ NewEntry.StackCount);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void FLyraInventoryList::RemoveEntry(ULyraInventoryItemInstance* Instance)
 {
 	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
@@ -139,6 +170,10 @@ void FLyraInventoryList::RemoveEntry(ULyraInventoryItemInstance* Instance)
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 TArray<ULyraInventoryItemInstance*> FLyraInventoryList::GetAllItems() const
 {
@@ -164,6 +199,10 @@ ULyraInventoryManagerComponent::ULyraInventoryManagerComponent(const FObjectInit
 	SetIsReplicatedByDefault(true);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void ULyraInventoryManagerComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -171,11 +210,19 @@ void ULyraInventoryManagerComponent::GetLifetimeReplicatedProps(TArray< FLifetim
 	DOREPLIFETIME(ThisClass, InventoryList);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 bool ULyraInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 StackCount)
 {
 	//@TODO: Add support for stack limit / uniqueness checks / etc...
 	return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 ULyraInventoryItemInstance* ULyraInventoryManagerComponent::AddItemDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 StackCount)
 {
@@ -199,8 +246,11 @@ ULyraInventoryItemInstance* ULyraInventoryManagerComponent::AddItemDefinition(TS
 void ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Implementation(
 	ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* SourceInventory)
 {
-	SourceInventory->RemoveItemInstance(ItemInstance);
-	AddItemInstance(ItemInstance);
+	if (SourceInventory->GetAllItems().Contains(ItemInstance))
+	{
+		SourceInventory->RemoveItemInstance(ItemInstance);
+		AddItemInstance(ItemInstance);	
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +260,19 @@ void ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Implementation(
 bool ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Validate(ULyraInventoryItemInstance* ItemInstance,
 	ULyraInventoryManagerComponent* SourceInventory)
 {
-	return (ItemInstance != nullptr) && (SourceInventory != nullptr);
+	if (ItemInstance == nullptr)
+	{
+		return false;
+	}
+	
+	if (SourceInventory == nullptr)
+	{
+		return false;
+	}
+
+	TArray<ULyraInventoryItemInstance*> sourceItems = SourceInventory->GetAllItems();
+	TArray<ULyraInventoryItemInstance*> destinationItems = GetAllItems();
+	return sourceItems.Contains(ItemInstance) && !destinationItems.Contains(ItemInstance);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -231,7 +293,67 @@ void ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Implementation(UL
 bool ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Validate(ULyraInventoryItemInstance* ItemInstance,
 	ULyraInventoryManagerComponent* DestinationInventory)
 {
-	return (ItemInstance != nullptr) && (DestinationInventory != nullptr);
+	if (ItemInstance == nullptr)
+	{
+		return false;
+	}
+	
+	if (DestinationInventory == nullptr)
+	{
+		return false;
+	}
+
+	TArray<ULyraInventoryItemInstance*> sourceItems = GetAllItems();
+	TArray<ULyraInventoryItemInstance*> destinationItems = DestinationInventory->GetAllItems();
+	return sourceItems.Contains(ItemInstance) && !destinationItems.Contains(ItemInstance);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraInventoryManagerComponent::Server_AttachItemToWeapon_Implementation(ULyraInventoryItemInstance* WeaponInstance, ULyraInventoryItemInstance* AttachmentInstance,
+	ULyraInventoryManagerComponent* AttachmentSourceInventory)
+{
+	if (this != AttachmentSourceInventory)
+	{
+		Server_MoveItemInstanceFrom(AttachmentInstance, AttachmentSourceInventory);
+	}
+
+	if (ULyraInventoryItemInstance* oldParentItem = AttachmentInstance->GetParentItem())
+	{
+			oldParentItem->RemoveAttachmentItem(AttachmentInstance);
+	}
+	WeaponInstance->AddAttachmentItem(AttachmentInstance);
+	AttachmentInstance->SetParentItem(WeaponInstance);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
+bool ULyraInventoryManagerComponent::Server_AttachItemToWeapon_Validate(ULyraInventoryItemInstance* WeaponInstance, ULyraInventoryItemInstance* AttachmentInstance,
+	ULyraInventoryManagerComponent* AttachmentSourceInventory)
+{
+	if (WeaponInstance == nullptr || AttachmentInstance == nullptr || AttachmentSourceInventory == nullptr)
+	{
+		return false;
+	}
+	const UInventoryFragment_EquippableItem* equippableItem = WeaponInstance->FindFragmentByClass<UInventoryFragment_EquippableItem>();
+	if (equippableItem == nullptr)
+	{
+		return false;
+	}
+	
+	const UInventoryFragment_AttachableItem* attachableItem = AttachmentInstance->FindFragmentByClass<UInventoryFragment_AttachableItem>();
+	if (attachableItem == nullptr)
+	{
+		return false;
+	}
+
+	TArray<ULyraInventoryItemInstance*> sourceItems = AttachmentSourceInventory->GetAllItems();
+	TArray<ULyraInventoryItemInstance*> destinationItems = GetAllItems();
+	return sourceItems.Contains(AttachmentInstance) && destinationItems.Contains(WeaponInstance);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,6 +369,10 @@ void ULyraInventoryManagerComponent::AddItemInstance(ULyraInventoryItemInstance*
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void ULyraInventoryManagerComponent::RemoveItemInstance(ULyraInventoryItemInstance* ItemInstance)
 {
 	InventoryList.RemoveEntry(ItemInstance);
@@ -257,10 +383,18 @@ void ULyraInventoryManagerComponent::RemoveItemInstance(ULyraInventoryItemInstan
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 TArray<ULyraInventoryItemInstance*> ULyraInventoryManagerComponent::GetAllItems() const
 {
 	return InventoryList.GetAllItems();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 ULyraInventoryItemInstance* ULyraInventoryManagerComponent::FindFirstItemStackByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef) const
 {
@@ -280,6 +414,10 @@ ULyraInventoryItemInstance* ULyraInventoryManagerComponent::FindFirstItemStackBy
 	return nullptr;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 int32 ULyraInventoryManagerComponent::GetTotalItemCountByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef) const
 {
 	int32 TotalCount = 0;
@@ -298,6 +436,10 @@ int32 ULyraInventoryManagerComponent::GetTotalItemCountByDefinition(TSubclassOf<
 
 	return TotalCount;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 bool ULyraInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 NumToConsume)
 {
@@ -325,6 +467,10 @@ bool ULyraInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<ULyraI
 	return TotalConsumed == NumToConsume;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void ULyraInventoryManagerComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
@@ -343,6 +489,10 @@ void ULyraInventoryManagerComponent::ReadyForReplication()
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////d
 
 bool ULyraInventoryManagerComponent::ReplicateSubobjects(UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
 {
