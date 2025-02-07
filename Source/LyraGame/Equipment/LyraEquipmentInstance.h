@@ -2,19 +2,31 @@
 
 #pragma once
 
+// Unreal Engine
 #include "Engine/World.h"
 
+// Lyra Project
+#include "Inventory/LyraInventoryItemInstance.h"
 #include "LyraEquipmentInstance.generated.h"
 
+// Unreal Engine
 class AActor;
 class APawn;
 struct FFrame;
+
+// Lyra Project
 struct FLyraEquipmentActorToSpawn;
 
 /**
  * ULyraEquipmentInstance
  *
  * A piece of equipment spawned and applied to a pawn
+ *
+ * @Hernan Changes made:
+ *	- AddAttachments function added
+ *	- AddAttachment function added
+ *	- RemoveAttachments function added
+ *	- RemoveAttachment function added
  */
 UCLASS(BlueprintType, Blueprintable)
 class ULyraEquipmentInstance : public UObject
@@ -48,6 +60,26 @@ public:
 
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
+
+	/**
+	 * Applies the effects of all the attachment items attached to the item.
+	 */
+	void AddAttachments();
+
+	/**
+	 * Applies the effects of a single attachment item attached to the item.
+	 */
+	void AddAttachment(ULyraInventoryItemInstance* AttachmentItem);
+
+	/**
+	 * Removes the effects of all the attachment items attached to the item.
+	 */
+	void RemoveAttachments();
+
+	/**
+	 * Removes the effects of a single attachment item attached to the item.
+	 */
+	void RemoveAttachment(ULyraInventoryItemInstance* AttachmentItem);
 
 protected:
 #if UE_WITH_IRIS

@@ -1,23 +1,32 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Class
 #include "LyraQuickBarComponent.h"
 
+// Unreal Engine
+#include "AbilitySystemComponent.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/Pawn.h"
+#include "NativeGameplayTags.h"
+
+// Lyra project
 #include "Equipment/LyraEquipmentDefinition.h"
 #include "Equipment/LyraEquipmentInstance.h"
 #include "Equipment/LyraEquipmentManagerComponent.h"
-#include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/Pawn.h"
 #include "Inventory/InventoryFragment_EquippableItem.h"
-#include "NativeGameplayTags.h"
+#include "Inventory/InventoryFragment_AttachableItem.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraQuickBarComponent)
 
+// Lyra Project
 class FLifetimeProperty;
 class ULyraEquipmentDefinition;
 
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_QuickBar_Message_SlotsChanged, "Lyra.QuickBar.Message.SlotsChanged");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_QuickBar_Message_ActiveIndexChanged, "Lyra.QuickBar.Message.ActiveIndexChanged");
+// @Hernan - Message ID tags added for WeaponAttachmentChangedWithDelta
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, "Lyra.Inventory.Message.WeaponAttachmentChangedWithDelta");
 
 ULyraQuickBarComponent::ULyraQuickBarComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -41,7 +50,29 @@ void ULyraQuickBarComponent::BeginPlay()
 	}
 
 	Super::BeginPlay();
+
+	// @Hernán MessageSubsystem listener register for WeaponAttachmentChangedWithDelta 
+	UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
+	WeaponAttachmentChangedWithDeltaListenerHandler = MessageSubsystem.RegisterListener(
+		TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, this,
+		&ThisClass::OnWeaponAttachmentChangedWithDelta);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan EndPlay override added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraQuickBarComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
+	MessageSubsystem.UnregisterListener(WeaponAttachmentChangedWithDeltaListenerHandler);
+	
+	Super::EndPlay(EndPlayReason);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraQuickBarComponent::CycleActiveSlotForward()
 {
@@ -101,6 +132,7 @@ void ULyraQuickBarComponent::EquipItemInSlot()
 					if (EquippedItem != nullptr)
 					{
 						EquippedItem->SetInstigator(SlotItem);
+						EquippedItem->AddAttachments();
 					}
 				}
 			}
@@ -114,6 +146,7 @@ void ULyraQuickBarComponent::UnequipItemInSlot()
 	{
 		if (EquippedItem != nullptr)
 		{
+			EquippedItem->RemoveAttachments();
 			EquipmentManager->UnequipItem(EquippedItem);
 			EquippedItem = nullptr;
 		}
@@ -131,6 +164,29 @@ ULyraEquipmentManagerComponent* ULyraQuickBarComponent::FindEquipmentManager() c
 	}
 	return nullptr;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan OnWeaponAttachmentChangedWithDelta added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraQuickBarComponent::OnWeaponAttachmentChangedWithDelta(FGameplayTag Channel, const FLyraInventoryWeaponAttachmentChangedWithDelta& Notification)
+{
+	if (Notification.Instance == EquippedItem->GetInstigator())
+	{
+		if (Notification.AttachmentChangeDelta < 0)
+		{
+			EquippedItem->RemoveAttachment(Notification.Attachment);
+		}
+		else if (Notification.AttachmentChangeDelta > 0)
+		{
+			EquippedItem->AddAttachment(Notification.Attachment);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraQuickBarComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
 {

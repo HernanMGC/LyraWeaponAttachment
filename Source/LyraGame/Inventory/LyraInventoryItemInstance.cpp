@@ -20,6 +20,7 @@
 class FLifetimeProperty;
 
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_Inventory_Message_WeaponAttachmentChanged, "Lyra.Inventory.Message.WeaponAttachmentChanged");
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, "Lyra.Inventory.Message.WeaponAttachmentChangedWithDelta");
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -133,6 +134,14 @@ TArray<ULyraInventoryItemInstance*> ULyraInventoryItemInstance::GetAllAttachment
 void ULyraInventoryItemInstance::AddAttachmentItem(ULyraInventoryItemInstance* InAttachmentItem)
 {
 	AttachedItems.AddUnique(InAttachmentItem);
+	
+	FLyraInventoryWeaponAttachmentChangedWithDelta Message;
+	Message.Instance = this;
+	Message.Attachment = InAttachmentItem;
+	Message.AttachmentChangeDelta = 1;
+	
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, Message);
 	OnRep_AttachedItems();
 }
 
@@ -143,6 +152,14 @@ void ULyraInventoryItemInstance::AddAttachmentItem(ULyraInventoryItemInstance* I
 void ULyraInventoryItemInstance::RemoveAttachmentItem(ULyraInventoryItemInstance* InAttachmentItem)
 {
 	AttachedItems.Remove(InAttachmentItem);
+	
+	FLyraInventoryWeaponAttachmentChangedWithDelta Message;
+	Message.Instance = this;
+	Message.Attachment = InAttachmentItem;
+	Message.AttachmentChangeDelta = -1;
+	
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, Message);
 	OnRep_AttachedItems();
 }
 

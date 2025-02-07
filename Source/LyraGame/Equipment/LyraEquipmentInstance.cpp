@@ -1,18 +1,26 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Class
 #include "LyraEquipmentInstance.h"
 
+// Unreal Engine
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
-#include "LyraEquipmentDefinition.h"
 #include "Net/UnrealNetwork.h"
-
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif // UE_WITH_IRIS
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+
+// Lyra Project
+#include "LyraEquipmentDefinition.h"
+#include "Inventory/InventoryFragment_AttachableItem.h"
+#include "Inventory/LyraInventoryItemInstance.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraEquipmentInstance)
 
+// Unreal Engine
 class FLifetimeProperty;
 class UClass;
 class USceneComponent;
@@ -112,6 +120,128 @@ void ULyraEquipmentInstance::OnUnequipped()
 {
 	K2_OnUnequipped();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan - AddAttachments function added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraEquipmentInstance::AddAttachments()
+{
+	if (Instigator != nullptr)
+	{
+		if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
+		{
+			for (ULyraInventoryItemInstance* attachmentItem : slotItem->GetAllAttachmentItems())
+			{
+				if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetPawn()))
+				{
+					if (const UInventoryFragment_AttachableItem* attachmentInfo = attachmentItem->FindFragmentByClass<UInventoryFragment_AttachableItem>())
+					{
+						if (const ULyraAttachmentDefinition* attachmentDefinition = GetDefault<ULyraAttachmentDefinition>(attachmentInfo->AttachmentDefinition))
+						{
+							for (TSubclassOf<UGameplayEffect> gameplayEffect : attachmentDefinition->GameplayEffectsToApply)
+							{
+								const UGameplayEffect* gameplayEffectCDO = gameplayEffect->GetDefaultObject<UGameplayEffect>();
+
+								ASC->ApplyGameplayEffectToSelf(gameplayEffectCDO, 0, ASC->MakeEffectContext());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan - AddAttachment added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraEquipmentInstance::AddAttachment(ULyraInventoryItemInstance* AttachmentItem)
+{
+	if (Instigator != nullptr)
+	{
+		if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
+		{
+			if (slotItem->GetAllAttachmentItems().Contains(AttachmentItem))
+			{
+				if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetPawn()))
+				{
+					if (const UInventoryFragment_AttachableItem* attachmentInfo = AttachmentItem->FindFragmentByClass<UInventoryFragment_AttachableItem>())
+					{
+						if (const ULyraAttachmentDefinition* attachmentDefinition = GetDefault<ULyraAttachmentDefinition>(attachmentInfo->AttachmentDefinition))
+						{
+							for (TSubclassOf<UGameplayEffect> gameplayEffect : attachmentDefinition->GameplayEffectsToApply)
+							{
+								const UGameplayEffect* gameplayEffectCDO = gameplayEffect->GetDefaultObject<UGameplayEffect>();
+
+								ASC->ApplyGameplayEffectToSelf(gameplayEffectCDO, 0, ASC->MakeEffectContext());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan - RemoveAttachments added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraEquipmentInstance::RemoveAttachments()
+{
+	if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
+	{
+		for (ULyraInventoryItemInstance* attachmentItem : slotItem->GetAllAttachmentItems())
+		{
+			if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetPawn()))
+			{
+				if (const UInventoryFragment_AttachableItem* attachmentInfo = attachmentItem->FindFragmentByClass<UInventoryFragment_AttachableItem>())
+				{
+					if (const ULyraAttachmentDefinition* attachmentDefinition = GetDefault<ULyraAttachmentDefinition>(attachmentInfo->AttachmentDefinition))
+					{
+						for (TSubclassOf<UGameplayEffect> gameplayEffect : attachmentDefinition->GameplayEffectsToApply)
+						{
+							ASC->RemoveActiveGameplayEffectBySourceEffect(gameplayEffect, ASC);
+						}
+					}
+				}
+			}
+		}	
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan - RemoveAttachment added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraEquipmentInstance::RemoveAttachment(ULyraInventoryItemInstance* AttachmentItem)
+{
+	if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
+	{
+		if (slotItem->GetAllAttachmentItems().Contains(AttachmentItem))
+		{
+			if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetPawn()))
+			{
+				if (const UInventoryFragment_AttachableItem* attachmentInfo = AttachmentItem->FindFragmentByClass<UInventoryFragment_AttachableItem>())
+				{
+					if (const ULyraAttachmentDefinition* attachmentDefinition = GetDefault<ULyraAttachmentDefinition>(attachmentInfo->AttachmentDefinition))
+					{
+						for (TSubclassOf<UGameplayEffect> gameplayEffect : attachmentDefinition->GameplayEffectsToApply)
+						{
+							ASC->RemoveActiveGameplayEffectBySourceEffect(gameplayEffect, ASC);
+						}
+					}
+				}
+			}
+		}	
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraEquipmentInstance::OnRep_Instigator()
 {

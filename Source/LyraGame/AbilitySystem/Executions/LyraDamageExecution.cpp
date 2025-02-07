@@ -13,10 +13,14 @@
 struct FDamageStatics
 {
 	FGameplayEffectAttributeCaptureDefinition BaseDamageDef;
+	// @Hernan - BaseDamageMultDef declared as attribute capture definition for FDamageStatics
+	FGameplayEffectAttributeCaptureDefinition BaseDamageMultDef;
 
 	FDamageStatics()
 	{
 		BaseDamageDef = FGameplayEffectAttributeCaptureDefinition(ULyraCombatSet::GetBaseDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+		// @Hernan - BaseDamageMultDef initialized
+		BaseDamageMultDef = FGameplayEffectAttributeCaptureDefinition(ULyraCombatSet::GetBaseDamageMultiplierAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 	}
 };
 
@@ -30,6 +34,8 @@ static FDamageStatics& DamageStatics()
 ULyraDamageExecution::ULyraDamageExecution()
 {
 	RelevantAttributesToCapture.Add(DamageStatics().BaseDamageDef);
+	// @Hernan - BaseDamageMultDef set as relevant attribute for capture
+	RelevantAttributesToCapture.Add(DamageStatics().BaseDamageMultDef);
 }
 
 void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
@@ -48,6 +54,9 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 
 	float BaseDamage = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageDef, EvaluateParameters, BaseDamage);
+	// @Hernan - BaseDamageMult captured
+	float BaseDamageMult = 1.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageMultDef, EvaluateParameters, BaseDamageMult);
 
 	const AActor* EffectCauser = TypedContext->GetEffectCauser();
 	const FHitResult* HitActorResult = TypedContext->GetHitResult();
@@ -127,7 +136,8 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 	DistanceAttenuation = FMath::Max(DistanceAttenuation, 0.0f);
 
 	// Clamping is done when damage is converted to -health
-	const float DamageDone = FMath::Max(BaseDamage * DistanceAttenuation * PhysicalMaterialAttenuation * DamageInteractionAllowedMultiplier, 0.0f);
+	// @Hernan - BaseDamageMult added to DamageDone calculation
+	const float DamageDone = FMath::Max(BaseDamage * DistanceAttenuation * PhysicalMaterialAttenuation * DamageInteractionAllowedMultiplier * BaseDamageMult, 0.0f);
 
 	if (DamageDone > 0.0f)
 	{

@@ -13,6 +13,9 @@ class UObject;
  * ULyraDamageExecution
  *
  *	Execution used by gameplay effects to apply damage to the health attributes.
+ *
+ *	@Hernan Changes made:
+ *	 - BaseDamageMultiplier replicated private UPROPERTY has been added to handle damage increases
  */
 UCLASS()
 class ULyraDamageExecution : public UGameplayEffectExecutionCalculation

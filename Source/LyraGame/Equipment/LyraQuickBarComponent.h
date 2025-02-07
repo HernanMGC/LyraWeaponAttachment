@@ -2,17 +2,32 @@
 
 #pragma once
 
+// Unreal Engine
 #include "Components/ControllerComponent.h"
-#include "Inventory/LyraInventoryItemInstance.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 
+// Lyra Project
+#include "Inventory/LyraInventoryItemInstance.h"
 #include "LyraQuickBarComponent.generated.h"
 
+// Unreal Engine
 class AActor;
-class ULyraEquipmentInstance;
-class ULyraEquipmentManagerComponent;
 class UObject;
 struct FFrame;
 
+// Lyra Project
+class ULyraEquipmentInstance;
+class ULyraEquipmentManagerComponent;
+struct FLyraNotificationMessage;
+
+/**
+ * @Hernan Changes made:
+ *	- BeginPlay override modified to register a UGameplayMessageSubsystem listener for changes on weapon attachment
+ *	changes
+ *	- EndPlay override added to deregister the UGameplayMessageSubsystem listener
+ *	- OnWeaponAttachmentChangedWithDelta function added.
+ *	- FGameplayMessageListenerHandle WeaponAttachmentChangedWithDeltaListenerHandler private property added
+ */
 UCLASS(Blueprintable, meta=(BlueprintSpawnableComponent))
 class ULyraQuickBarComponent : public UControllerComponent
 {
@@ -51,7 +66,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	ULyraInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
 
+	// Overriden to: Add defaulted slots and register message listener
 	virtual void BeginPlay() override;
+
+	// Overriden to: Deregister message listener
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	void UnequipItemInSlot();
@@ -59,6 +78,15 @@ private:
 
 	ULyraEquipmentManagerComponent* FindEquipmentManager() const;
 
+	/**
+	 * Reacts to WeaponAttachmentChangedWithDelta events to add or remove the attachment effect if the parent item is
+	 * currently equipped.
+	 * @param Channel Channel listened to
+	 * @param Notification An FLyraInventoryWeaponAttachmentChangedWithDelta used to determine if Attachement needs to
+	 * be added or removed
+	 */
+	void OnWeaponAttachmentChangedWithDelta(FGameplayTag Channel, const FLyraInventoryWeaponAttachmentChangedWithDelta& Notification);
+	
 protected:
 	UPROPERTY()
 	int32 NumSlots = 3;
@@ -78,6 +106,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<ULyraEquipmentInstance> EquippedItem;
+
+	// Message listener handle for WeaponAttachmentChangedWithDelta
+	FGameplayMessageListenerHandle WeaponAttachmentChangedWithDeltaListenerHandler;
 };
 
 

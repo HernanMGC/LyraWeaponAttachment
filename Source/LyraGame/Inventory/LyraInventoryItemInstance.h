@@ -18,7 +18,9 @@ struct FGameplayTag;
 class ULyraInventoryItemFragment;
 class ULyraInventoryItemDefinition;
 
-/** A message when weapon's attachment changes */
+/**
+ * @Hernan
+ * A message when weapon's attachment changes */
 USTRUCT(BlueprintType)
 struct FLyraInventoryWeaponAttachmentChanged
 {
@@ -30,13 +32,47 @@ struct FLyraInventoryWeaponAttachmentChanged
 };
 
 /**
+ * @Hernan
+ * A message when weapon's attachment changes
+ */
+USTRUCT(BlueprintType)
+struct FLyraInventoryWeaponAttachmentChangedWithDelta
+{
+	GENERATED_BODY()
+
+	// Item instance whose attachment list has changed
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<ULyraInventoryItemInstance> Instance = nullptr;
+
+	// Attachment item instance that has changed
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<ULyraInventoryItemInstance> Attachment = nullptr;
+
+	// Item change delta
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	int32 AttachmentChangeDelta = 0;
+};
+
+/**
  * ULyraInventoryItemInstance
  *
- * Modified to be able to be attached to another item, or receive attachments.
+ * @Hernan Changes made:
+ *  - Modified to be able to be attached to another item, or receive attachments.
  * Being able to received attachments will be determined by their item definition having an
  * InventoryFragment_EquippableItem fragment.
  * Being able to be attached to another item will be determined by their item definition having an
  * InventoryFragment_AttachableItem fragment.
+ *		- TObjectPtr<ULyraInventoryItemInstance> ParentItem replicated private UPROPERTY added.
+ *		- TArray<TObjectPtr<ULyraInventoryItemInstance>> AttachedItems replicated private UPROPERTY added.
+ *		- ULyraInventoryItemInstance* GetParentItem public BlueprintCallable function added.
+ *		- void SetParentItem public function added.
+ *		- TArray<ULyraInventoryItemInstance*> GetAllAttachmentItems public BlueprintCallable function added.
+ *		- void AddAttachmentItem public function added.
+ *		- void RemoveAttachmentItem public function added.
+ *		- void OnRep_AttachedItems protected function added.
+ *		- void BroadcastChangeMessage private function added.
+ *		- FLyraInventoryWeaponAttachmentChanged struct definition added.
+ *		- FLyraInventoryWeaponAttachmentChangedWithDelta struct definition added.
  */
 UCLASS(BlueprintType)
 class ULyraInventoryItemInstance : public UObject
@@ -87,7 +123,6 @@ public:
 	// Returns parent item, i.e.: the item this item is attached to.
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ULyraInventoryItemInstance* GetParentItem();
-
 	
 	// Sets a parent item, i.e.: the item this item is attached to.
 	void SetParentItem(ULyraInventoryItemInstance* InParentItem);
