@@ -131,6 +131,11 @@ TArray<ULyraInventoryItemInstance*> ULyraInventoryItemInstance::GetAllAttachment
 
 void ULyraInventoryItemInstance::AddAttachmentItem(ULyraInventoryItemInstance* InAttachmentItem)
 {
+	if (AttachedItems.Num() >= GetStatTagStackCount(FGameplayTag::RequestGameplayTag("Lyra.ShooterGame.Weapon.AttachmentSlots", false)))
+	{
+		return;
+	}
+
 	AttachedItems.AddUnique(InAttachmentItem);
 	
 	FLyraInventoryWeaponAttachmentChangedWithDelta Message;

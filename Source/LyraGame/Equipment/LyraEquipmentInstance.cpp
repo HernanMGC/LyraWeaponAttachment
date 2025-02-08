@@ -48,6 +48,7 @@ void ULyraEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 	DOREPLIFETIME(ThisClass, Instigator);
 	DOREPLIFETIME(ThisClass, SpawnedActors);
+	DOREPLIFETIME(ThisClass, SpawnedAttachmentActors);
 }
 
 #if UE_WITH_IRIS
@@ -102,11 +103,77 @@ void ULyraEquipmentInstance::SpawnEquipmentActors(const TArray<FLyraEquipmentAct
 
 void ULyraEquipmentInstance::DestroyEquipmentActors()
 {
+	DestroyAttachmentActors();
+
 	for (AActor* Actor : SpawnedActors)
 	{
 		if (Actor)
 		{
 			Actor->Destroy();
+		}
+	}
+}
+
+void ULyraEquipmentInstance::SpawnAttachmentActors(ULyraInventoryItemInstance* attachmentItem, const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn)
+{
+	if (APawn* owningPawn = GetPawn())
+	{
+		USceneComponent* attachTarget = nullptr;;
+		if (AActor* parentActor = SpawnedActors[0])
+		{
+			attachTarget  = parentActor->GetRootComponent();
+		}
+		else
+		{
+			attachTarget = owningPawn->GetRootComponent();
+			if (ACharacter* character = Cast<ACharacter>(owningPawn))
+			{
+				attachTarget = character->GetMesh();
+			}
+		}
+
+		if (attachTarget == nullptr)
+		{
+			return;
+		}
+	
+		FSpawnedActorsPerAttachment spawnedAttachmentActorsTemp;
+		for (const FLyraEquipmentActorToSpawn& SpawnInfo : ActorsToSpawn)
+		{
+			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity, owningPawn);
+			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
+			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
+			NewActor->AttachToComponent(attachTarget, FAttachmentTransformRules::KeepRelativeTransform, SpawnInfo.AttachSocket);
+			spawnedAttachmentActorsTemp.SpawnedAttachmentActors.Add(NewActor);
+		}
+
+		spawnedAttachmentActorsTemp.Attachment = attachmentItem;
+		SpawnedAttachmentActors.Add(spawnedAttachmentActorsTemp);
+	}
+}
+
+void ULyraEquipmentInstance::DestroyAttachmentActors()
+{
+	for (FSpawnedActorsPerAttachment spawnedActorsPerAttachment : SpawnedAttachmentActors)
+	{
+		for (TObjectPtr<AActor> actor : spawnedActorsPerAttachment.SpawnedAttachmentActors)
+		{
+			actor->Destroy();
+		}
+	}
+}
+
+void ULyraEquipmentInstance::DestroyAttachmentActors(ULyraInventoryItemInstance* attachmentItem)
+{
+	for (const FSpawnedActorsPerAttachment& spawnedActorsPerAttachment : SpawnedAttachmentActors)
+	{
+		if (spawnedActorsPerAttachment.Attachment == attachmentItem)
+		{
+			for (TObjectPtr<AActor> actor : spawnedActorsPerAttachment.SpawnedAttachmentActors)
+			{
+				actor->Destroy();
+			}
+			break;
 		}
 	}
 }
@@ -125,7 +192,7 @@ void ULyraEquipmentInstance::OnUnequipped()
 // @Hernan - ActivateAttachments function added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::ActivateAttachments() const
+void ULyraEquipmentInstance::ActivateAttachments()
 {
 	if (Instigator != nullptr)
 	{
@@ -145,6 +212,8 @@ void ULyraEquipmentInstance::ActivateAttachments() const
 
 								ASC->ApplyGameplayEffectToSelf(gameplayEffectCDO, 0, ASC->MakeEffectContext());
 							}
+
+							SpawnAttachmentActors(attachmentItem, attachmentDefinition->ActorsToSpawn);
 						}
 					}
 				}
@@ -157,7 +226,7 @@ void ULyraEquipmentInstance::ActivateAttachments() const
 // @Hernan - ActivateAddedAttachment added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem) const
+void ULyraEquipmentInstance::ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem)
 {
 	if (Instigator != nullptr)
 	{
@@ -177,6 +246,8 @@ void ULyraEquipmentInstance::ActivateAddedAttachment(ULyraInventoryItemInstance*
 
 								ASC->ApplyGameplayEffectToSelf(gameplayEffectCDO, 0, ASC->MakeEffectContext());
 							}
+
+							SpawnAttachmentActors(AttachmentItem, attachmentDefinition->ActorsToSpawn);
 						}
 					}
 				}
@@ -189,7 +260,7 @@ void ULyraEquipmentInstance::ActivateAddedAttachment(ULyraInventoryItemInstance*
 // @Hernan - DeactivateAttachments added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::DeactivateAttachments() const
+void ULyraEquipmentInstance::DeactivateAttachments()
 {
 	if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
 	{
@@ -205,6 +276,8 @@ void ULyraEquipmentInstance::DeactivateAttachments() const
 						{
 							ASC->RemoveActiveGameplayEffectBySourceEffect(gameplayEffect, ASC);
 						}
+
+						DestroyAttachmentActors();
 					}
 				}
 			}
@@ -216,7 +289,7 @@ void ULyraEquipmentInstance::DeactivateAttachments() const
 // @Hernan - DeactivateRemovedAttachment added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem) const
+void ULyraEquipmentInstance::DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem)
 {
 	if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
 	{
@@ -234,6 +307,8 @@ void ULyraEquipmentInstance::DeactivateRemovedAttachment(ULyraInventoryItemInsta
 						{
 							ASC->RemoveActiveGameplayEffectBySourceEffect(gameplayEffect, ASC);
 						}
+
+						DestroyAttachmentActors(AttachmentItem);
 					}
 				}
 			}

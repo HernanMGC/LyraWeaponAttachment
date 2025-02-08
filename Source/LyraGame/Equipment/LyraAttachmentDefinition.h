@@ -7,10 +7,14 @@
 #include "UObject/Object.h"
 
 // Lyra Project
+#include "LyraEquipmentDefinition.h"
 #include "LyraAttachmentDefinition.generated.h"
 
 // Unreal Engine 
 class UGameplayEffect;
+
+// Lyra Project
+struct FLyraEquipmentActorToSpawn;
 
 /**
  * Template for the weapon attachment. It defines the gameplay effect to be applied on equipment.
@@ -27,4 +31,8 @@ public:
 	// Gameplay effects to apply when the weapon the attachment is attached to is equipped
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)
 	TArray<TSubclassOf<UGameplayEffect>> GameplayEffectsToApply;
+	
+	// Actors to spawn on the pawn when this is equipped
+	UPROPERTY(EditDefaultsOnly, Category=Equipment)
+	TArray<FLyraEquipmentActorToSpawn> ActorsToSpawn;
 };

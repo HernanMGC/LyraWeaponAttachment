@@ -17,6 +17,18 @@ struct FFrame;
 // Lyra Project
 struct FLyraEquipmentActorToSpawn;
 
+USTRUCT()
+struct FSpawnedActorsPerAttachment
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TObjectPtr<ULyraInventoryItemInstance> Attachment;
+	
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> SpawnedAttachmentActors;
+};
+
 /**
  * ULyraEquipmentInstance
  *
@@ -57,6 +69,10 @@ public:
 
 	virtual void SpawnEquipmentActors(const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn);
 	virtual void DestroyEquipmentActors();
+	
+	virtual void SpawnAttachmentActors(ULyraInventoryItemInstance* attachmentItem, const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn);
+	virtual void DestroyAttachmentActors();
+	virtual void DestroyAttachmentActors(ULyraInventoryItemInstance* attachmentItem);
 
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
@@ -64,22 +80,22 @@ public:
 	/**
 	 * Applies the effects of all the attachment items attached to the item.
 	 */
-	void ActivateAttachments() const;
+	void ActivateAttachments();
 
 	/**
 	 * Applies the effects of a single attachment item that has just been attached to the item.
 	 */
-	void ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem) const;
+	void ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem);
 
 	/**
 	 * Removes the effects of all the attachment items attached to the item.
 	 */
-	void DeactivateAttachments() const;
+	void DeactivateAttachments();
 
 	/**
 	 * Removes the effects of a single attachment item that has already been detached from the item .
 	 */
-	void DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem) const;
+	void DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem);
 
 protected:
 #if UE_WITH_IRIS
@@ -103,4 +119,7 @@ private:
 
 	UPROPERTY(Replicated)
 	TArray<TObjectPtr<AActor>> SpawnedActors;
+	
+	UPROPERTY(Replicated)
+	TArray<FSpawnedActorsPerAttachment> SpawnedAttachmentActors;
 };

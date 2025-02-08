@@ -360,6 +360,11 @@ bool ULyraInventoryManagerComponent::Server_AttachItemToWeapon_Validate(ULyraInv
 		return false;
 	}
 
+	if (WeaponInstance->GetAllAttachmentItems().Num() >= WeaponInstance->GetStatTagStackCount(FGameplayTag::RequestGameplayTag("Lyra.ShooterGame.Weapon.AttachmentSlots", false)))
+	{
+		return false;
+	}
+	
 	TArray<ULyraInventoryItemInstance*> sourceItems = AttachmentSourceInventory->GetAllItems();
 	TArray<ULyraInventoryItemInstance*> destinationItems = GetAllItems();
 	return sourceItems.Contains(AttachmentInstance) && destinationItems.Contains(WeaponInstance);
