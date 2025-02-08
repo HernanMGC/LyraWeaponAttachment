@@ -25,8 +25,8 @@ struct FLyraEquipmentActorToSpawn;
  * @Hernan Changes made:
  *	- AddAttachments function added
  *	- AddAttachment function added
- *	- RemoveAttachments function added
- *	- RemoveAttachment function added
+ *	- DeactivateAttachments function added
+ *	- DeactivateAttachment function added
  */
 UCLASS(BlueprintType, Blueprintable)
 class ULyraEquipmentInstance : public UObject
@@ -64,22 +64,22 @@ public:
 	/**
 	 * Applies the effects of all the attachment items attached to the item.
 	 */
-	void AddAttachments();
+	void ActivateAttachments() const;
 
 	/**
-	 * Applies the effects of a single attachment item attached to the item.
+	 * Applies the effects of a single attachment item that has just been attached to the item.
 	 */
-	void AddAttachment(ULyraInventoryItemInstance* AttachmentItem);
+	void ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem) const;
 
 	/**
 	 * Removes the effects of all the attachment items attached to the item.
 	 */
-	void RemoveAttachments();
+	void DeactivateAttachments() const;
 
 	/**
-	 * Removes the effects of a single attachment item attached to the item.
+	 * Removes the effects of a single attachment item that has already been detached from the item .
 	 */
-	void RemoveAttachment(ULyraInventoryItemInstance* AttachmentItem);
+	void DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem) const;
 
 protected:
 #if UE_WITH_IRIS

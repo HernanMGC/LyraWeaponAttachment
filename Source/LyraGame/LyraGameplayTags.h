@@ -57,4 +57,11 @@ namespace LyraGameplayTags
 	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Flying);
 
 	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Custom);
+
+
+	// @Hernan - Message ID tags added for WeaponAttachmentChanged
+	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Lyra_Inventory_Message_WeaponAttachmentChanged);
+	// @Hernan - Message ID tags added for WeaponAttachmentChangedWithDelta
+	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta);
+
 };

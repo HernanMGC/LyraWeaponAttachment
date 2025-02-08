@@ -122,10 +122,10 @@ void ULyraEquipmentInstance::OnUnequipped()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// @Hernan - AddAttachments function added
+// @Hernan - ActivateAttachments function added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::AddAttachments()
+void ULyraEquipmentInstance::ActivateAttachments() const
 {
 	if (Instigator != nullptr)
 	{
@@ -154,10 +154,10 @@ void ULyraEquipmentInstance::AddAttachments()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// @Hernan - AddAttachment added
+// @Hernan - ActivateAddedAttachment added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::AddAttachment(ULyraInventoryItemInstance* AttachmentItem)
+void ULyraEquipmentInstance::ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem) const
 {
 	if (Instigator != nullptr)
 	{
@@ -186,10 +186,10 @@ void ULyraEquipmentInstance::AddAttachment(ULyraInventoryItemInstance* Attachmen
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// @Hernan - RemoveAttachments added
+// @Hernan - DeactivateAttachments added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::RemoveAttachments()
+void ULyraEquipmentInstance::DeactivateAttachments() const
 {
 	if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
 	{
@@ -213,14 +213,16 @@ void ULyraEquipmentInstance::RemoveAttachments()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// @Hernan - RemoveAttachment added
+// @Hernan - DeactivateRemovedAttachment added
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraEquipmentInstance::RemoveAttachment(ULyraInventoryItemInstance* AttachmentItem)
+void ULyraEquipmentInstance::DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem) const
 {
 	if (ULyraInventoryItemInstance* slotItem = Cast<ULyraInventoryItemInstance>(Instigator))
 	{
-		if (slotItem->GetAllAttachmentItems().Contains(AttachmentItem))
+		// This is a special case, item has already been removed
+		// as this is a reaction for attachment removal and thus it should not be contained
+		if (!slotItem->GetAllAttachmentItems().Contains(AttachmentItem))
 		{
 			if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetPawn()))
 			{

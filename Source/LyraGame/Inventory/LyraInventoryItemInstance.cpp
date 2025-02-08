@@ -12,15 +12,13 @@
 #include "GameFramework/GameplayMessageSubsystem.h"
 
 // Lyra Project
+#include "LyraGameplayTags.h"
 #include "Inventory/LyraInventoryItemDefinition.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraInventoryItemInstance)
 
 // Unreal Engine
 class FLifetimeProperty;
-
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_Inventory_Message_WeaponAttachmentChanged, "Lyra.Inventory.Message.WeaponAttachmentChanged");
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, "Lyra.Inventory.Message.WeaponAttachmentChangedWithDelta");
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -141,7 +139,7 @@ void ULyraInventoryItemInstance::AddAttachmentItem(ULyraInventoryItemInstance* I
 	Message.AttachmentChangeDelta = 1;
 	
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, Message);
+	MessageSystem.BroadcastMessage(LyraGameplayTags::TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, Message);
 	OnRep_AttachedItems();
 }
 
@@ -159,7 +157,7 @@ void ULyraInventoryItemInstance::RemoveAttachmentItem(ULyraInventoryItemInstance
 	Message.AttachmentChangeDelta = -1;
 	
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, Message);
+	MessageSystem.BroadcastMessage(LyraGameplayTags::TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, Message);
 	OnRep_AttachedItems();
 }
 
@@ -182,7 +180,7 @@ void ULyraInventoryItemInstance::BroadcastChangeMessage()
 	Message.Instance = this;
 	
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-	MessageSystem.BroadcastMessage(TAG_Lyra_Inventory_Message_WeaponAttachmentChanged, Message);
+	MessageSystem.BroadcastMessage(LyraGameplayTags::TAG_Lyra_Inventory_Message_WeaponAttachmentChanged, Message);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

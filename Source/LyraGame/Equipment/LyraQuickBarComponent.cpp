@@ -10,6 +10,7 @@
 #include "NativeGameplayTags.h"
 
 // Lyra project
+#include "LyraGameplayTags.h"
 #include "Equipment/LyraEquipmentDefinition.h"
 #include "Equipment/LyraEquipmentInstance.h"
 #include "Equipment/LyraEquipmentManagerComponent.h"
@@ -25,8 +26,6 @@ class ULyraEquipmentDefinition;
 
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_QuickBar_Message_SlotsChanged, "Lyra.QuickBar.Message.SlotsChanged");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_QuickBar_Message_ActiveIndexChanged, "Lyra.QuickBar.Message.ActiveIndexChanged");
-// @Hernan - Message ID tags added for WeaponAttachmentChangedWithDelta
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, "Lyra.Inventory.Message.WeaponAttachmentChangedWithDelta");
 
 ULyraQuickBarComponent::ULyraQuickBarComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -54,7 +53,7 @@ void ULyraQuickBarComponent::BeginPlay()
 	// @Hernán MessageSubsystem listener register for WeaponAttachmentChangedWithDelta 
 	UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld());
 	WeaponAttachmentChangedWithDeltaListenerHandler = MessageSubsystem.RegisterListener(
-		TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, this,
+		LyraGameplayTags::TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, this,
 		&ThisClass::OnWeaponAttachmentChangedWithDelta);
 }
 
@@ -132,7 +131,7 @@ void ULyraQuickBarComponent::EquipItemInSlot()
 					if (EquippedItem != nullptr)
 					{
 						EquippedItem->SetInstigator(SlotItem);
-						EquippedItem->AddAttachments();
+						EquippedItem->ActivateAttachments();
 					}
 				}
 			}
@@ -146,7 +145,7 @@ void ULyraQuickBarComponent::UnequipItemInSlot()
 	{
 		if (EquippedItem != nullptr)
 		{
-			EquippedItem->RemoveAttachments();
+			EquippedItem->DeactivateAttachments();
 			EquipmentManager->UnequipItem(EquippedItem);
 			EquippedItem = nullptr;
 		}
@@ -175,11 +174,11 @@ void ULyraQuickBarComponent::OnWeaponAttachmentChangedWithDelta(FGameplayTag Cha
 	{
 		if (Notification.AttachmentChangeDelta < 0)
 		{
-			EquippedItem->RemoveAttachment(Notification.Attachment);
+			EquippedItem->DeactivateRemovedAttachment(Notification.Attachment);
 		}
 		else if (Notification.AttachmentChangeDelta > 0)
 		{
-			EquippedItem->AddAttachment(Notification.Attachment);
+			EquippedItem->ActivateAddedAttachment(Notification.Attachment);
 		}
 	}
 }

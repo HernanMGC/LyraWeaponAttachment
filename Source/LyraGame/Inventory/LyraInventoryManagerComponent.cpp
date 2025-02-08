@@ -279,9 +279,18 @@ bool ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Validate(ULyraI
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Implementation(ULyraInventoryItemInstance* ItemInstance,
-                                                                              ULyraInventoryManagerComponent* DestinationInventory)
+void ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Implementation(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* DestinationInventory)
 {
+	// If an attachable item is moved to another inventory it is safe to assume that its attachment connections need to be reset.
+	if (const UInventoryFragment_AttachableItem* attachableItem = ItemInstance->FindFragmentByClass<UInventoryFragment_AttachableItem>())
+	{
+		if (ULyraInventoryItemInstance* weaponItem = ItemInstance->GetParentItem())
+		{
+			weaponItem->RemoveAttachmentItem(ItemInstance);
+			ItemInstance->SetParentItem(nullptr);
+		}
+	}
+	
 	RemoveItemInstance(ItemInstance);
 	DestinationInventory->AddItemInstance(ItemInstance);
 }

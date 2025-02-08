@@ -55,6 +55,12 @@ namespace LyraGameplayTags
 	// When extending Lyra, you can create your own movement modes but you need to update GetCustomMovementModeTagMap()
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Movement_Mode_Custom, "Movement.Mode.Custom", "This is invalid and should be replaced with custom tags.  See LyraGameplayTags::CustomMovementModeTagMap.");
 
+	// @Hernan - Message ID tags added for WeaponAttachmentChanged
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Lyra_Inventory_Message_WeaponAttachmentChanged, "Lyra.Inventory.Message.WeaponAttachmentChanged", "Tag that defines gameplay message channel for WeaponAttachmentChanged.");
+	// @Hernan - Message ID tags added for WeaponAttachmentChangedWithDelta
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Lyra_Inventory_Message_WeaponAttachmentChangedWithDelta, "Lyra.Inventory.Message.WeaponAttachmentChangedWithDelta", "Tag that defines gameplay message channel for WeaponAttachmentChangedWithDelta.");
+
+	
 	// Unreal Movement Modes
 	const TMap<uint8, FGameplayTag> MovementModeTagMap =
 	{
