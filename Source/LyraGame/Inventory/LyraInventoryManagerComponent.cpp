@@ -432,6 +432,33 @@ ULyraInventoryItemInstance* ULyraInventoryManagerComponent::FindFirstItemStackBy
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+FText ULyraInventoryManagerComponent::GetInventoryStatus()
+{
+	FString statusString;
+
+	for (ULyraInventoryItemInstance* item : GetAllItems())
+	{
+		if (const UInventoryFragment_EquippableItem* equippableInfo = item->FindFragmentByClass<UInventoryFragment_EquippableItem>())
+		{
+			const ULyraInventoryItemDefinition* equippableDef = GetDefault<ULyraInventoryItemDefinition>( item->GetItemDef());
+			statusString += equippableDef->DisplayName.ToString() + ":";
+
+			for (ULyraInventoryItemInstance* attachmentItem : item->GetAllAttachmentItems())
+			{
+				const ULyraInventoryItemDefinition* attachmentDef = GetDefault<ULyraInventoryItemDefinition>( attachmentItem->GetItemDef());
+				statusString += " [" + attachmentDef->DisplayName.ToString() + "]";
+			}
+		}
+		statusString += "\n";
+	}
+	
+	return FText::FromString(statusString);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 int32 ULyraInventoryManagerComponent::GetTotalItemCountByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef) const
 {
 	int32 TotalCount = 0;

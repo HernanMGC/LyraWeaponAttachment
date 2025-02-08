@@ -172,7 +172,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category=Inventory, BlueprintPure)
 	ULyraInventoryItemInstance* FindFirstItemStackByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef) const;
-
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FText GetInventoryStatus(); 
+	
 	int32 GetTotalItemCountByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef) const;
 	bool ConsumeItemsByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 NumToConsume);
 
