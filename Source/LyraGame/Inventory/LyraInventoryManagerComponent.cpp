@@ -15,6 +15,8 @@
 #include "InventoryFragment_EquippableItem.h"
 #include "LyraInventoryItemDefinition.h"
 #include "LyraInventoryItemInstance.h"
+#include "Equipment/LyraEquipmentManagerComponent.h"
+#include "Equipment/LyraQuickBarComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraInventoryManagerComponent)
 
@@ -436,10 +438,19 @@ FText ULyraInventoryManagerComponent::GetInventoryStatus()
 {
 	FString statusString;
 
+	ULyraQuickBarComponent* quickBarComponent = GetOwner()->GetComponentByClass<ULyraQuickBarComponent>();
+	
 	for (ULyraInventoryItemInstance* item : GetAllItems())
 	{
 		if (const UInventoryFragment_EquippableItem* equippableInfo = item->FindFragmentByClass<UInventoryFragment_EquippableItem>())
 		{
+			if (quickBarComponent != nullptr)
+			{
+				statusString += "[";
+				statusString += (quickBarComponent->GetActiveSlotItem() == item) ? "X" : " ";
+				statusString += "] ";	
+			}
+			
 			const ULyraInventoryItemDefinition* equippableDef = GetDefault<ULyraInventoryItemDefinition>( item->GetItemDef());
 			statusString += equippableDef->DisplayName.ToString() + ":";
 
@@ -448,8 +459,9 @@ FText ULyraInventoryManagerComponent::GetInventoryStatus()
 				const ULyraInventoryItemDefinition* attachmentDef = GetDefault<ULyraInventoryItemDefinition>( attachmentItem->GetItemDef());
 				statusString += " [" + attachmentDef->DisplayName.ToString() + "]";
 			}
+			
+			statusString += "\n";
 		}
-		statusString += "\n";
 	}
 	
 	return FText::FromString(statusString);
