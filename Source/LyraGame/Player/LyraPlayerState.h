@@ -44,6 +44,9 @@ enum class ELyraPlayerConnectionType : uint8
  * ALyraPlayerState
  *
  *	Base player state class used by this project.
+ *
+ *	@Hernan - Changes made:
+ *	 - New attribute set added for managing max walk speed through GAS
  */
 UCLASS(Config = Game)
 class LYRAGAME_API ALyraPlayerState : public AModularPlayerState, public IAbilitySystemInterface, public ILyraTeamAgentInterface
@@ -156,6 +159,7 @@ private:
 	// Combat attribute set used by this actor.
 	UPROPERTY()
 	TObjectPtr<const class ULyraCombatSet> CombatSet;
+	// @Hernan Movement attribute set added
 	UPROPERTY()
 	TObjectPtr<const class ULyraMovementSet> MovementSet;
 

@@ -17,6 +17,7 @@ class UGameplayEffect;
 struct FLyraEquipmentActorToSpawn;
 
 /**
+ * @Hernan
  * Template for the weapon attachment. It defines the gameplay effect to be applied on equipment.
  */
 UCLASS(Blueprintable, Const, Abstract, BlueprintType)
@@ -28,11 +29,11 @@ public:
 	// Constructor
 	ULyraAttachmentDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	// Gameplay effects to apply when the weapon the attachment is attached to is equipped
+	// Gameplay effects to apply when the weapon this Item is attached to is equipped
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)
 	TArray<TSubclassOf<UGameplayEffect>> GameplayEffectsToApply;
 	
-	// Actors to spawn on the pawn when this is equipped
+	// Actors to spawn on the pawn when the weapon this Item is attached to is equipped
 	UPROPERTY(EditDefaultsOnly, Category=Equipment)
 	TArray<FLyraEquipmentActorToSpawn> ActorsToSpawn;
 };

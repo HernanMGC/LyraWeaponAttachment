@@ -17,14 +17,23 @@ struct FFrame;
 // Lyra Project
 struct FLyraEquipmentActorToSpawn;
 
+/**
+ * @Hernan
+ * FSpawnedActorsPerAttachment
+ *
+ * Struct that serves a roundabout for replicated TMaps that stores the Spawn Actors for each Attachment attached to the
+ * weapon.
+ */
 USTRUCT()
 struct FSpawnedActorsPerAttachment
 {
 	GENERATED_BODY()
 
+	// Attachment Item
 	UPROPERTY()
 	TObjectPtr<ULyraInventoryItemInstance> Attachment;
-	
+
+	// Spawned actors for Attachment
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> SpawnedAttachmentActors;
 };
@@ -35,10 +44,13 @@ struct FSpawnedActorsPerAttachment
  * A piece of equipment spawned and applied to a pawn
  *
  * @Hernan Changes made:
- *	- AddAttachments function added
- *	- AddAttachment function added
- *	- DeactivateAttachments function added
- *	- DeactivateAttachment function added
+ *  - SpawnAttachmentActors function added.
+ *  - DestroyAttachmentActors function added.
+ *  - DestroyAttachmentActors function added.
+ *  - ActivateAttachments function added.
+ *  - ActivateAddedAttachment function added.
+ *  - DestroyAttachmentActors called add inside DestroyEquipmentActors to ensure that no Spawn Actor is left visible
+ *    when weapon is unequipped.
  */
 UCLASS(BlueprintType, Blueprintable)
 class ULyraEquipmentInstance : public UObject
@@ -69,31 +81,55 @@ public:
 
 	virtual void SpawnEquipmentActors(const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn);
 	virtual void DestroyEquipmentActors();
-	
-	virtual void SpawnAttachmentActors(ULyraInventoryItemInstance* attachmentItem, const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn);
+
+	/**
+	 * @Hernan
+	 * Given an attachment item (it is assumed that it is an Item with AttachableItem fragment in it), Spawn attachment
+	 * actors to the Weapon or Pawn for visual feedback purposes.
+	 * @param AttachmentItem Attachment Item whose actors need to be spawn
+	 * @param ActorsToSpawn Actors to spawn info
+	 */
+	virtual void SpawnAttachmentActors(ULyraInventoryItemInstance* AttachmentItem, const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn);
+
+	/**
+	 * @Hernan
+	 * Despawn all actors spawn for every Attachment Item attached to this weapon.
+	 */
 	virtual void DestroyAttachmentActors();
-	virtual void DestroyAttachmentActors(ULyraInventoryItemInstance* attachmentItem);
+
+	/**
+	 * @Hernan
+	 * Despawn all actors spawn for an specific Attachment Item attached to this weapon.
+	 * @param AttachmentItem Attachment Item whose actors need to be despawn 
+	 */
+	virtual void DestroyAttachmentActors(ULyraInventoryItemInstance* AttachmentItem);
 
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
 
 	/**
+	 * @Hernan
 	 * Applies the effects of all the attachment items attached to the item.
 	 */
 	void ActivateAttachments();
 
 	/**
-	 * Applies the effects of a single attachment item that has just been attached to the item.
+	 * @Hernan
+	 * Applies the effects of a single attachment item.
+	 * @param AttachmentItem Item to attach
 	 */
 	void ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem);
 
 	/**
+	 * @Hernan
 	 * Removes the effects of all the attachment items attached to the item.
 	 */
 	void DeactivateAttachments();
 
 	/**
-	 * Removes the effects of a single attachment item that has already been detached from the item .
+	 * @Hernan
+	 * Removes the effects of a single attachment item that has already been detached from the item.
+	 * @param AttachmentItem Item to attach
 	 */
 	void DeactivateRemovedAttachment(ULyraInventoryItemInstance* AttachmentItem);
 
@@ -119,7 +155,9 @@ private:
 
 	UPROPERTY(Replicated)
 	TArray<TObjectPtr<AActor>> SpawnedActors;
-	
+
+	// @Hernan
+	// List of Actors spawned by Attachment Items
 	UPROPERTY(Replicated)
 	TArray<FSpawnedActorsPerAttachment> SpawnedAttachmentActors;
 };

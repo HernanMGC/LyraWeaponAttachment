@@ -10,12 +10,11 @@
 #include "NativeGameplayTags.h"
 
 // Lyra project
-#include "LyraGameplayTags.h"
 #include "Equipment/LyraEquipmentDefinition.h"
 #include "Equipment/LyraEquipmentInstance.h"
 #include "Equipment/LyraEquipmentManagerComponent.h"
 #include "Inventory/InventoryFragment_EquippableItem.h"
-#include "Inventory/InventoryFragment_AttachableItem.h"
+#include "LyraGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraQuickBarComponent)
@@ -131,6 +130,7 @@ void ULyraQuickBarComponent::EquipItemInSlot()
 					if (EquippedItem != nullptr)
 					{
 						EquippedItem->SetInstigator(SlotItem);
+						// @Hernan - Activate attached items, i.e.: activate their GEffects
 						EquippedItem->ActivateAttachments();
 					}
 				}
@@ -145,6 +145,7 @@ void ULyraQuickBarComponent::UnequipItemInSlot()
 	{
 		if (EquippedItem != nullptr)
 		{
+			// @Hernan - Deactivate attached items, i.e.: deactivate their GEffects
 			EquippedItem->DeactivateAttachments();
 			EquipmentManager->UnequipItem(EquippedItem);
 			EquippedItem = nullptr;
@@ -165,7 +166,7 @@ ULyraEquipmentManagerComponent* ULyraQuickBarComponent::FindEquipmentManager() c
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// @Hernan OnWeaponAttachmentChangedWithDelta added
+// @Hernan OnWeaponAttachmentChangedWithDelta function added
 ////////////////////////////////////////////////////////////////////////////////
 
 void ULyraQuickBarComponent::OnWeaponAttachmentChangedWithDelta(FGameplayTag Channel, const FLyraInventoryWeaponAttachmentChangedWithDelta& Notification)

@@ -21,6 +21,8 @@ class ULyraEquipmentManagerComponent;
 struct FLyraNotificationMessage;
 
 /**
+ * ULyraQuickBarComponent
+ *
  * @Hernan Changes made:
  *	- BeginPlay override modified to register a UGameplayMessageSubsystem listener for changes on weapon attachment
  *	changes
@@ -66,10 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	ULyraInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
 
-	// Overriden to: Add defaulted slots and register message listener
+	// @Hernan - Overriden to: Add defaulted slots and register message listener
 	virtual void BeginPlay() override;
 
-	// Overriden to: Deregister message listener
+	// @Hernan - Overriden to: Deregister message listener
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
@@ -79,10 +81,11 @@ private:
 	ULyraEquipmentManagerComponent* FindEquipmentManager() const;
 
 	/**
+	 * @Hernan
 	 * Reacts to WeaponAttachmentChangedWithDelta events to add or remove the attachment effect if the parent item is
 	 * currently equipped.
 	 * @param Channel Channel listened to
-	 * @param Notification An FLyraInventoryWeaponAttachmentChangedWithDelta used to determine if Attachement needs to
+	 * @param Notification An FLyraInventoryWeaponAttachmentChangedWithDelta used to determine if Attachment needs to
 	 * be added or removed
 	 */
 	void OnWeaponAttachmentChangedWithDelta(FGameplayTag Channel, const FLyraInventoryWeaponAttachmentChangedWithDelta& Notification);
@@ -107,7 +110,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<ULyraEquipmentInstance> EquippedItem;
 
-	// Message listener handle for WeaponAttachmentChangedWithDelta
+	// @Hernan - Message listener handle for WeaponAttachmentChangedWithDelta
 	FGameplayMessageListenerHandle WeaponAttachmentChangedWithDeltaListenerHandler;
 };
 

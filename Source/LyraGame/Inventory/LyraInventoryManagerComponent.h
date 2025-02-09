@@ -148,15 +148,52 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	ULyraInventoryItemInstance* AddItemDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef, int32 StackCount = 1);
 
-	// Move one item from this InventoryManagerComponent to another
+	/**
+	 * @Hernan
+	 * Move one item from another this InventoryManagerComponent to another InventoryManagerComponent.
+	 * Validation requires:
+	 *	- A valid ItemInstance
+	 *  - A valid SourceInventory
+	 *  - DestinationInventory is different that this Inventory
+	 *  - This Inventory contains the ItemInstance
+	 *  - DestinationInventory does not contain the ItemInstance
+	 * @param ItemInstance Item to transfer 
+	 * @param DestinationInventory Inventory the item came from
+	 */
 	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
 	void Server_MoveItemInstanceTo(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* DestinationInventory);
 
-	// Move one item from another InventoryManagerComponent to this InventoryManagerComponent 
+	/**
+	 * @Hernan
+	 * Move one item from another InventoryManagerComponent to this InventoryManagerComponent.
+	 * Validation requires:
+	 *	- A valid ItemInstance
+	 *  - A valid SourceInventory
+	 *  - SourceInventory is different that this Inventory
+	 *  - SourceInventory contains the ItemInstance
+	 *  - This Inventory does not contain the ItemInstance
+	 * @param ItemInstance Item to transfer 
+	 * @param SourceInventory Inventory the item came from
+	 */
 	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
 	void Server_MoveItemInstanceFrom(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* SourceInventory);
 
-	// Attach item to weapon and move the item if it comes from another InventoryManagerComponent to this InventoryManagerComponent 
+	/**
+	 * @Hernan
+	 * Attach item to weapon and move the item if it comes from another InventoryManagerComponent to this InventoryManagerComponent 
+	 * Validation requires:
+	 *  - A valid WeaponInstance
+	 *  - A valid AttachmentInstance
+	 *  - A valid AttachmentSourceInventory
+	 *  - WeaponInstance has a UInventoryFragment_EquippableItem
+	 *  - InventoryInstance needs to have a UInventoryFragment_AttachableItem
+	 *  - WeaponInstance has at least one free AttachmentSlot
+	 *  - This Inventory has to contain WeaponInstance
+	 *  - SourceInventory Inventory has to contain AttachmentInstance
+	 * @param WeaponInstance Weapon item instance the AttachmentInstance is going to be attached to 
+	 * @param AttachmentInstance Attachment item instance that is going to be attached to WeaponInstance
+	 * @param AttachmentSourceInventory Attachment item source inventory
+	 */
 	UFUNCTION(Server, reliable, WithValidation, BlueprintCallable)
 	void Server_AttachItemToWeapon(ULyraInventoryItemInstance* WeaponInstance, ULyraInventoryItemInstance* AttachmentInstance,
 	ULyraInventoryManagerComponent* AttachmentSourceInventory);
@@ -172,7 +209,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category=Inventory, BlueprintPure)
 	ULyraInventoryItemInstance* FindFirstItemStackByDefinition(TSubclassOf<ULyraInventoryItemDefinition> ItemDef) const;
-	
+
+	/**
+	 * @Hernan
+	 * Returns a string that represents the current inventory state.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FText GetInventoryStatus(); 
 	

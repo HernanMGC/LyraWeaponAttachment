@@ -20,6 +20,7 @@ class ULyraInventoryItemDefinition;
 
 /**
  * @Hernan
+ * FLyraInventoryWeaponAttachmentChanged
  * A message when weapon's attachment changes */
 USTRUCT(BlueprintType)
 struct FLyraInventoryWeaponAttachmentChanged
@@ -33,6 +34,7 @@ struct FLyraInventoryWeaponAttachmentChanged
 
 /**
  * @Hernan
+ * FLyraInventoryWeaponAttachmentChangedWithDelta
  * A message when weapon's attachment changes
  */
 USTRUCT(BlueprintType)
@@ -80,7 +82,6 @@ class ULyraInventoryItemInstance : public UObject
 	GENERATED_BODY()
 
 public:
-	// Constructor
 	ULyraInventoryItemInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	//~UObject interface
@@ -103,41 +104,59 @@ public:
 	UFUNCTION(BlueprintCallable, Category=Inventory)
 	bool HasStatTag(FGameplayTag Tag) const;
 
-	// Returns item's definition
 	TSubclassOf<ULyraInventoryItemDefinition> GetItemDef() const
 	{
 		return ItemDef;
 	}
 
-	// Return an item's fragment by class filtering.
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, meta=(DeterminesOutputType=FragmentClass))
 	const ULyraInventoryItemFragment* FindFragmentByClass(TSubclassOf<ULyraInventoryItemFragment> FragmentClass) const;
 
-	// Return an item's fragment by class filtering.
 	template <typename ResultClass>
 	const ResultClass* FindFragmentByClass() const
 	{
 		return (ResultClass*)FindFragmentByClass(ResultClass::StaticClass());
 	}
 
-	// Returns parent item, i.e.: the item this item is attached to.
+	/**
+	 * @Hernan
+	 * Returns parent item, i.e.: the item this item is attached to.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ULyraInventoryItemInstance* GetParentItem();
-	
-	// Sets a parent item, i.e.: the item this item is attached to.
-	void SetParentItem(ULyraInventoryItemInstance* InParentItem);
 
-	// Returns attachment items, i.e.: the items attached to this item.
+	/**
+	 * @Hernan
+	 * Sets a parent item, i.e.: the item this item is attached to.
+	 * @param InParentItem Parent item
+	 */
+	void SetParentItem(ULyraInventoryItemInstance* InParentItem);
+	
+	/**
+	 * @Hernan
+	 * Returns attachment items, i.e.: the items attached to this item.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<ULyraInventoryItemInstance*> GetAllAttachmentItems();
 	
-	// Adds an attachment item, i.e.: the items attached to this item.
+	/**
+	 * @Hernan
+	 * Adds an attachment item, i.e.: the items attached to this item
+	 */
 	void AddAttachmentItem(ULyraInventoryItemInstance* InAttachmentItem);
 
-	// Removes an attachment item, i.e.: the items attached to this item.
+	/**
+	 * @Hernan
+	 * Removes an attachment item, i.e.: the items attached to this item.
+	 * @param InAttachmentItem Attachment item
+	 */
 	void RemoveAttachmentItem(ULyraInventoryItemInstance* InAttachmentItem);
+	
 protected:
-	// Replication call for AttachedItems. It will send a broadcast message though UGameplayMessageSubsystem 
+	/**
+	 * @Hernan
+	 * Replication call for AttachedItems. It will send a broadcast message though UGameplayMessageSubsystem 
+	 */
 	UFUNCTION()
 	void OnRep_AttachedItems();
 
@@ -147,10 +166,12 @@ private:
 	virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
 #endif // UE_WITH_IRIS
 
-	// Sets item's definitions
 	void SetItemDef(TSubclassOf<ULyraInventoryItemDefinition> InDef);
 
-	// Send a message through UGameplayMessageSubsystem announcing a changed in the item attachment list
+	/**
+	 * @Hernan
+	 * Send a message through UGameplayMessageSubsystem announcing a changed in the item attachment list
+	 */
 	void BroadcastChangeMessage();
 
 private:
@@ -164,11 +185,11 @@ private:
 	UPROPERTY(Replicated)
 	TSubclassOf<ULyraInventoryItemDefinition> ItemDef;
 
-	// Item that this item is attached to. It will only be relevant for items with InventoryFragment_AttachableItem fragments
+	// @Hernan Item that this item is attached to. It will only be relevant for items with InventoryFragment_AttachableItem fragments
 	UPROPERTY(Replicated)
 	TObjectPtr<ULyraInventoryItemInstance> ParentItem;
 
-	// Items that are attached to this item. It will only be relevant for items with InventoryFragment_EquippableItem fragments
+	// @Hernan Items that are attached to this item. It will only be relevant for items with InventoryFragment_EquippableItem fragments
 	UPROPERTY(ReplicatedUsing=OnRep_AttachedItems)
 	TArray<TObjectPtr<ULyraInventoryItemInstance>> AttachedItems;
 };

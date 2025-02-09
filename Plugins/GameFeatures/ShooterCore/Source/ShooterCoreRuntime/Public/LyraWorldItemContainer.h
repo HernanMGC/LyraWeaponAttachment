@@ -15,6 +15,9 @@ class ULyraInventoryItemInstance;
 class ULyraInventoryItemDefinition;
 
 /**
+ * @Hernan
+ * ALyraWorldItemContainer
+ * 
  * Actor that serves as world item container. It can be interacted to pick and drop (to be implemented) items.
  */
 UCLASS()
@@ -23,7 +26,7 @@ class SHOOTERCORERUNTIME_API ALyraWorldItemContainer : public AActor, public IIn
 	GENERATED_BODY()
 
 public:
-	// Constructor. This actor should be replicated.
+	// Constructor. This actor needs to be replicated.
 	ALyraWorldItemContainer();
 
 	// Interaction setup

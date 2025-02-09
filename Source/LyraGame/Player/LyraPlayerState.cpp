@@ -1,27 +1,32 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Class
 #include "LyraPlayerState.h"
 
+// Unreal Engine
+#include "Components/GameFrameworkComponentManager.h"
+#include "Engine/World.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+
+// Lyra Project
 #include "AbilitySystem/Attributes/LyraCombatSet.h"
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
+#include "AbilitySystem/Attributes/LyraMovementSet.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "Character/LyraPawnData.h"
 #include "Character/LyraPawnExtensionComponent.h"
-#include "Components/GameFrameworkComponentManager.h"
-#include "Engine/World.h"
-#include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 //@TODO: Would like to isolate this a bit better to get the pawn data in here without this having to know about other stuff
 #include "GameModes/LyraGameMode.h"
 #include "LyraLogChannels.h"
 #include "LyraPlayerController.h"
-#include "AbilitySystem/Attributes/LyraMovementSet.h"
 #include "Messages/LyraVerbMessage.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraPlayerState)
 
+// Unreal Engine
 class AController;
 class APlayerState;
 class FLifetimeProperty;
@@ -39,6 +44,7 @@ ALyraPlayerState::ALyraPlayerState(const FObjectInitializer& ObjectInitializer)
 	// These attribute sets will be detected by AbilitySystemComponent::InitializeComponent. Keeping a reference so that the sets don't get garbage collected before that.
 	HealthSet = CreateDefaultSubobject<ULyraHealthSet>(TEXT("HealthSet"));
 	CombatSet = CreateDefaultSubobject<ULyraCombatSet>(TEXT("CombatSet"));
+	// @Hernan - New ULyraMovementSet initialization for Player State 
 	MovementSet = CreateDefaultSubobject<ULyraMovementSet>(TEXT("MovementSet"));
 
 	// AbilitySystemComponent needs to be updated at a high frequency.

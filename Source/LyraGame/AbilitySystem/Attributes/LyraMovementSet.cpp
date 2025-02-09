@@ -3,9 +3,13 @@
 // Class
 #include "LyraMovementSet.h"
 
-#include "Character/LyraCharacterMovementComponent.h"
+// Unreal Engine
 #include "Net/UnrealNetwork.h"
+
+////////////////////////////////////////////////////////////////////////////////
 //
+////////////////////////////////////////////////////////////////////////////////
+
 ULyraMovementSet::ULyraMovementSet()
 	: MaxFlySpeed(0.f)
 	, MaxWalkSpeed(0.f)
@@ -14,6 +18,11 @@ ULyraMovementSet::ULyraMovementSet()
 	, MaxWalkSpeedCrouched(0.f)
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void ULyraMovementSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -24,3 +33,7 @@ void ULyraMovementSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION_NOTIFY(ULyraMovementSet, MaxCustomMovementSpeed, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ULyraMovementSet, MaxWalkSpeedCrouched, COND_None, REPNOTIFY_Always);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////

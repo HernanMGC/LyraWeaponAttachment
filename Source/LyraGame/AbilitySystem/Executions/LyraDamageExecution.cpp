@@ -1,11 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Class
 #include "LyraDamageExecution.h"
-#include "AbilitySystem/Attributes/LyraHealthSet.h"
+
+// Unreal Engine
+
+// Lyra Project
 #include "AbilitySystem/Attributes/LyraCombatSet.h"
-#include "AbilitySystem/LyraGameplayEffectContext.h"
+#include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "AbilitySystem/LyraAbilitySourceInterface.h"
-#include "Engine/World.h"
+#include "AbilitySystem/LyraGameplayEffectContext.h"
 #include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraDamageExecution)
@@ -55,8 +59,8 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 	float BaseDamage = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageDef, EvaluateParameters, BaseDamage);
 	// @Hernan - BaseDamageMult captured
-	float BaseDamageMult = 1.0f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageMultDef, EvaluateParameters, BaseDamageMult);
+	float baseDamageMult = 1.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BaseDamageMultDef, EvaluateParameters, baseDamageMult);
 
 	const AActor* EffectCauser = TypedContext->GetEffectCauser();
 	const FHitResult* HitActorResult = TypedContext->GetHitResult();
@@ -137,7 +141,7 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 
 	// Clamping is done when damage is converted to -health
 	// @Hernan - BaseDamageMult added to DamageDone calculation
-	const float DamageDone = FMath::Max(BaseDamage * DistanceAttenuation * PhysicalMaterialAttenuation * DamageInteractionAllowedMultiplier * BaseDamageMult, 0.0f);
+	const float DamageDone = FMath::Max(BaseDamage * DistanceAttenuation * PhysicalMaterialAttenuation * DamageInteractionAllowedMultiplier * baseDamageMult, 0.0f);
 
 	if (DamageDone > 0.0f)
 	{

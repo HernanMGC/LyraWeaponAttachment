@@ -16,6 +16,9 @@ LYRAGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Gameplay_MovementStopped);
  * FLyraCharacterGroundInfo
  *
  *	Information about the ground under the character.  It only gets updated as needed.
+ *
+ *	@Hernan - Changes made:
+ *		- GetMaxSpeed function now returns attributes values from ULyraMovementSet
  */
 USTRUCT(BlueprintType)
 struct FLyraCharacterGroundInfo

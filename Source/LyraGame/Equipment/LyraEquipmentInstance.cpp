@@ -4,19 +4,19 @@
 #include "LyraEquipmentInstance.h"
 
 // Unreal Engine
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
-#include "Net/UnrealNetwork.h"
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif // UE_WITH_IRIS
-#include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
+#include "Net/UnrealNetwork.h"
 
 // Lyra Project
-#include "LyraEquipmentDefinition.h"
 #include "Inventory/InventoryFragment_AttachableItem.h"
 #include "Inventory/LyraInventoryItemInstance.h"
+#include "LyraEquipmentDefinition.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraEquipmentInstance)
 
@@ -48,6 +48,7 @@ void ULyraEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 	DOREPLIFETIME(ThisClass, Instigator);
 	DOREPLIFETIME(ThisClass, SpawnedActors);
+	// @Hernan - SpawnedAttachmentActors replication setup
 	DOREPLIFETIME(ThisClass, SpawnedAttachmentActors);
 }
 
@@ -103,6 +104,7 @@ void ULyraEquipmentInstance::SpawnEquipmentActors(const TArray<FLyraEquipmentAct
 
 void ULyraEquipmentInstance::DestroyEquipmentActors()
 {
+	// @Hernan - Destroy actor spawned for the attachments item attached to the current weapon 
 	DestroyAttachmentActors();
 
 	for (AActor* Actor : SpawnedActors)
@@ -114,7 +116,11 @@ void ULyraEquipmentInstance::DestroyEquipmentActors()
 	}
 }
 
-void ULyraEquipmentInstance::SpawnAttachmentActors(ULyraInventoryItemInstance* attachmentItem, const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn)
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan - SpawnAttachmentActors function added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraEquipmentInstance::SpawnAttachmentActors(ULyraInventoryItemInstance* AttachmentItem, const TArray<FLyraEquipmentActorToSpawn>& ActorsToSpawn)
 {
 	if (APawn* owningPawn = GetPawn())
 	{
@@ -147,10 +153,14 @@ void ULyraEquipmentInstance::SpawnAttachmentActors(ULyraInventoryItemInstance* a
 			spawnedAttachmentActorsTemp.SpawnedAttachmentActors.Add(NewActor);
 		}
 
-		spawnedAttachmentActorsTemp.Attachment = attachmentItem;
+		spawnedAttachmentActorsTemp.Attachment = AttachmentItem;
 		SpawnedAttachmentActors.Add(spawnedAttachmentActorsTemp);
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// @Hernan - DestroyAttachmentActors function added
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraEquipmentInstance::DestroyAttachmentActors()
 {
@@ -158,25 +168,39 @@ void ULyraEquipmentInstance::DestroyAttachmentActors()
 	{
 		for (TObjectPtr<AActor> actor : spawnedActorsPerAttachment.SpawnedAttachmentActors)
 		{
-			actor->Destroy();
+			if (actor->IsValidLowLevel())
+			{
+				actor->Destroy();
+			}
 		}
 	}
 }
 
-void ULyraEquipmentInstance::DestroyAttachmentActors(ULyraInventoryItemInstance* attachmentItem)
+////////////////////////////////////////////////////////////////////////////////
+//  @Hernan - DestroyAttachmentActors function added
+////////////////////////////////////////////////////////////////////////////////
+
+void ULyraEquipmentInstance::DestroyAttachmentActors(ULyraInventoryItemInstance* AttachmentItem)
 {
 	for (const FSpawnedActorsPerAttachment& spawnedActorsPerAttachment : SpawnedAttachmentActors)
 	{
-		if (spawnedActorsPerAttachment.Attachment == attachmentItem)
+		if (spawnedActorsPerAttachment.Attachment == AttachmentItem)
 		{
 			for (TObjectPtr<AActor> actor : spawnedActorsPerAttachment.SpawnedAttachmentActors)
 			{
-				actor->Destroy();
+				if (actor->IsValidLowLevel())
+				{
+					actor->Destroy();
+				}
 			}
 			break;
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
 
 void ULyraEquipmentInstance::OnEquipped()
 {
@@ -223,7 +247,7 @@ void ULyraEquipmentInstance::ActivateAttachments()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// @Hernan - ActivateAddedAttachment added
+// @Hernan - ActivateAddedAttachment function added
 ////////////////////////////////////////////////////////////////////////////////
 
 void ULyraEquipmentInstance::ActivateAddedAttachment(ULyraInventoryItemInstance* AttachmentItem)
