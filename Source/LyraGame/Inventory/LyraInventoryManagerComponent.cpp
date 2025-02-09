@@ -208,6 +208,21 @@ ULyraInventoryItemInstance* ULyraInventoryManagerComponent::AddItemDefinition(TS
 void ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Implementation(
 	ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* SourceInventory)
 {
+	if (ItemInstance == nullptr)
+	{
+		return;
+	}
+	
+	if (SourceInventory == nullptr)
+	{
+		return;
+	}
+
+	if (SourceInventory == this)
+	{
+		return;
+	}
+
 	if (SourceInventory->GetAllItems().Contains(ItemInstance))
 	{
 		// If an attachable item is moved to another inventory it is safe to assume that its attachment connections need to be reset.
@@ -232,21 +247,7 @@ void ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Implementation(
 bool ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Validate(ULyraInventoryItemInstance* ItemInstance,
 	ULyraInventoryManagerComponent* SourceInventory)
 {
-	if (ItemInstance == nullptr)
-	{
-		return false;
-	}
-	
-	if (SourceInventory == nullptr)
-	{
-		return false;
-	}
-
-	if (SourceInventory == this)
-	{
-		return false;
-	}
-
+	// It may be a bit harsh for validation
 	TArray<ULyraInventoryItemInstance*> sourceItems = SourceInventory->GetAllItems();
 	TArray<ULyraInventoryItemInstance*> destinationItems = GetAllItems();
 	return sourceItems.Contains(ItemInstance) && !destinationItems.Contains(ItemInstance);
@@ -258,6 +259,21 @@ bool ULyraInventoryManagerComponent::Server_MoveItemInstanceFrom_Validate(ULyraI
 
 void ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Implementation(ULyraInventoryItemInstance* ItemInstance, ULyraInventoryManagerComponent* DestinationInventory)
 {
+	if (ItemInstance == nullptr)
+	{
+		return;
+	}
+	
+	if (DestinationInventory == nullptr)
+	{
+		return;
+	}
+
+	if (DestinationInventory == this)
+	{
+		return;
+	}
+	
 	// If an attachable item is moved to another inventory it is safe to assume that its attachment connections need to be reset.
 	if (const UInventoryFragment_AttachableItem* attachableItem = ItemInstance->FindFragmentByClass<UInventoryFragment_AttachableItem>())
 	{
@@ -279,21 +295,8 @@ void ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Implementation(UL
 bool ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Validate(ULyraInventoryItemInstance* ItemInstance,
 	ULyraInventoryManagerComponent* DestinationInventory)
 {
-	if (ItemInstance == nullptr)
-	{
-		return false;
-	}
-	
-	if (DestinationInventory == nullptr)
-	{
-		return false;
-	}
 
-	if (DestinationInventory == this)
-	{
-		return false;
-	}
-
+	// It may be a bit harsh for validation
 	TArray<ULyraInventoryItemInstance*> sourceItems = GetAllItems();
 	TArray<ULyraInventoryItemInstance*> destinationItems = DestinationInventory->GetAllItems();
 	return sourceItems.Contains(ItemInstance) && !destinationItems.Contains(ItemInstance);
@@ -306,6 +309,27 @@ bool ULyraInventoryManagerComponent::Server_MoveItemInstanceTo_Validate(ULyraInv
 void ULyraInventoryManagerComponent::Server_AttachItemToWeapon_Implementation(ULyraInventoryItemInstance* WeaponInstance, ULyraInventoryItemInstance* AttachmentInstance,
 	ULyraInventoryManagerComponent* AttachmentSourceInventory)
 {
+	if (WeaponInstance == nullptr || AttachmentInstance == nullptr || AttachmentSourceInventory == nullptr)
+	{
+		return;
+	}
+	const UInventoryFragment_EquippableItem* equippableItem = WeaponInstance->FindFragmentByClass<UInventoryFragment_EquippableItem>();
+	if (equippableItem == nullptr)
+	{
+		return;
+	}
+	
+	const UInventoryFragment_AttachableItem* attachableItem = AttachmentInstance->FindFragmentByClass<UInventoryFragment_AttachableItem>();
+	if (attachableItem == nullptr)
+	{
+		return;
+	}
+
+	if (WeaponInstance->GetAllAttachmentItems().Num() >= WeaponInstance->GetStatTagStackCount(FGameplayTag::RequestGameplayTag("Lyra.ShooterGame.Weapon.AttachmentSlots", false)))
+	{
+		return;
+	}
+	
 	if (this != AttachmentSourceInventory)
 	{
 		Server_MoveItemInstanceFrom(AttachmentInstance, AttachmentSourceInventory);
@@ -326,27 +350,6 @@ void ULyraInventoryManagerComponent::Server_AttachItemToWeapon_Implementation(UL
 bool ULyraInventoryManagerComponent::Server_AttachItemToWeapon_Validate(ULyraInventoryItemInstance* WeaponInstance, ULyraInventoryItemInstance* AttachmentInstance,
 	ULyraInventoryManagerComponent* AttachmentSourceInventory)
 {
-	if (WeaponInstance == nullptr || AttachmentInstance == nullptr || AttachmentSourceInventory == nullptr)
-	{
-		return false;
-	}
-	const UInventoryFragment_EquippableItem* equippableItem = WeaponInstance->FindFragmentByClass<UInventoryFragment_EquippableItem>();
-	if (equippableItem == nullptr)
-	{
-		return false;
-	}
-	
-	const UInventoryFragment_AttachableItem* attachableItem = AttachmentInstance->FindFragmentByClass<UInventoryFragment_AttachableItem>();
-	if (attachableItem == nullptr)
-	{
-		return false;
-	}
-
-	if (WeaponInstance->GetAllAttachmentItems().Num() >= WeaponInstance->GetStatTagStackCount(FGameplayTag::RequestGameplayTag("Lyra.ShooterGame.Weapon.AttachmentSlots", false)))
-	{
-		return false;
-	}
-	
 	TArray<ULyraInventoryItemInstance*> sourceItems = AttachmentSourceInventory->GetAllItems();
 	TArray<ULyraInventoryItemInstance*> destinationItems = GetAllItems();
 	return sourceItems.Contains(AttachmentInstance) && destinationItems.Contains(WeaponInstance);
