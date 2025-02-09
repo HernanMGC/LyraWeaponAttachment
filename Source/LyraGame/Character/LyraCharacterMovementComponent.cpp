@@ -4,6 +4,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/Attributes/LyraMovementSet.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
@@ -127,5 +128,26 @@ float ULyraCharacterMovementComponent::GetMaxSpeed() const
 		}
 	}
 
+	if (const auto* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
+	{
+		switch(MovementMode)
+		{
+			case MOVE_Walking:
+			case MOVE_NavWalking:
+				return IsCrouching() ? ASC->GetNumericAttribute(ULyraMovementSet::GetMaxWalkSpeedCrouchedAttribute()) : ASC->GetNumericAttribute(ULyraMovementSet::GetMaxWalkSpeedAttribute());
+			case MOVE_Falling:
+				return ASC->GetNumericAttribute(ULyraMovementSet::GetMaxWalkSpeedAttribute());
+			case MOVE_Swimming:
+				return ASC->GetNumericAttribute(ULyraMovementSet::GetMaxSwimSpeedAttribute());
+			case MOVE_Flying:
+				return ASC->GetNumericAttribute(ULyraMovementSet::GetMaxFlySpeedAttribute());
+			case MOVE_Custom:
+				return ASC->GetNumericAttribute(ULyraMovementSet::GetMaxCustomMovementSpeedAttribute());
+			case MOVE_None:
+			default:
+				return 0.f;
+		}
+	}
+	
 	return Super::GetMaxSpeed();
 }

@@ -35,7 +35,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Overriden to: Unset this actor as a component receiver for Gameplay Feature Actions
-	virtual void Destroyed() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
 	// Interaction option

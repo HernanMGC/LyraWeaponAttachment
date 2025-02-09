@@ -43,14 +43,17 @@ void ALyraWorldItemContainer::BeginPlay()
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void ALyraWorldItemContainer::Destroyed()
+void ALyraWorldItemContainer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (UGameFrameworkComponentManager* componentManager = GetGameInstance()->GetSubsystem<UGameFrameworkComponentManager>())
+	if (UGameInstance* gameInstance = GetGameInstance())
 	{
-		componentManager->RemoveReceiver(this);
+		if (UGameFrameworkComponentManager* componentManager = gameInstance->GetSubsystem<UGameFrameworkComponentManager>())
+		{
+			componentManager->RemoveReceiver(this);
+		}
 	}
 	
-	Super::Destroyed();
+	Super::EndPlay(EndPlayReason);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
